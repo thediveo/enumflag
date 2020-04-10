@@ -81,7 +81,7 @@ func Set(flag interface{}, s string) error {
 	}
 	// Oh no! An invalid textual enum value was specified, so let's generate
 	// some useful error explaining which textual representations are valid.
-	// We're ordering values by their canonical names in order to achive a
+	// We're ordering values by their canonical names in order to achieve a
 	// stable error message.
 	allids := []string{}
 	for _, ids := range idmap.EnumIdentifiers {
