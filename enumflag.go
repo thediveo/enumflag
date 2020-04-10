@@ -126,7 +126,10 @@ func cachedMapping(flag interface{}) enumTypeCacheEntry {
 	// Do we already have this enumeration flag type in our cache? If not, we
 	// need to add it, which is a slightly convoluted process as we need to
 	// convert the enumeration id-to-text mapping into our canonical form.
-	flagval := reflect.ValueOf(flag).Elem()
+	flagval := reflect.ValueOf(flag)
+	if flagval.Kind() == reflect.Ptr {
+		flagval = flagval.Elem()
+	}
 	flagtype := flagval.Type()
 	flagtypename := flagtype.Name()
 	cacheentry, ok := enumTypeCache[flagtypename]
@@ -139,8 +142,11 @@ func cachedMapping(flag interface{}) enumTypeCacheEntry {
 			panic(fmt.Sprintf("incompatible enumeration type %s", flagtypename))
 		}
 		// Next, ensure that the enumeration value-to-textual ids map actually
-		// is a map.
-		enumids, sensitivity := flagval.Interface().(Mapper).Enums()
+		// is a map. Please note that we must not use "flagval" here, as it
+		// might have been dereferences in case of a pointer to an enum flag:
+		// this would then forbid us to convert the enum flag into a Mapper
+		// interface.
+		enumids, sensitivity := reflect.ValueOf(flag).Interface().(Mapper).Enums()
 		enumidsrval := reflect.ValueOf(enumids)
 		if enumidsrval.Kind() != reflect.Map {
 			panic(fmt.Sprintf("incompatible enumeration identifiers map type %s",

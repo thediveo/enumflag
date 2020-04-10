@@ -20,23 +20,23 @@ import (
 )
 
 // Our new enumeration type.
-type FooMode Flag
+type FooModeTest Flag
 
-func (fm *FooMode) String() string     { return String(fm) }
-func (fm *FooMode) Set(s string) error { return Set(fm, s) }
-func (fm FooMode) Enums() (interface{}, EnumCaseSensitivity) {
+func (fm *FooModeTest) String() string     { return String(fm) }
+func (fm *FooModeTest) Set(s string) error { return Set(fm, s) }
+func (fm *FooModeTest) Enums() (interface{}, EnumCaseSensitivity) {
 	return FooModeIdentifiers, EnumCaseSensitive
 }
 
 // Enumeration constants/values.
 const (
-	Foo FooMode = iota
+	Foo FooModeTest = iota
 	Bar
 	Baz
 )
 
 // Enumeration identifiers mapped to their corresponding constants.
-var FooModeIdentifiers = map[FooMode][]string{
+var FooModeIdentifiers = map[FooModeTest][]string{
 	Foo: {"foo"},
 	Bar: {"bar", "Bar"},
 	Baz: {"baz"},
@@ -50,14 +50,14 @@ var _ = Describe("flag", func() {
 	})
 
 	It("denies setting invalid values", func() {
-		var foomode FooMode
+		var foomode FooModeTest
 		err := foomode.Set("FOOBAR")
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(Equal("must be 'bar'/'Bar', 'baz', 'foo'"))
 	})
 
 	It("sets the enumeration value from text", func() {
-		var foomode FooMode
+		var foomode FooModeTest
 		Expect(foomode.Set("Bar")).NotTo(HaveOccurred())
 		Expect(foomode).To(Equal(Bar))
 	})

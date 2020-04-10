@@ -1,0 +1,33 @@
+name: build and test
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+
+  buildandtest:
+    name: Build and Test on Go ${{matrix.go}}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: ['1.14', '1.13', '1.12']
+    steps:
+
+    - name: Set up Go ${{matrix.go}}
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{matrix.go}}
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Get dependencies
+      run: go get -v -t -d ./...
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./...
