@@ -22,31 +22,60 @@ import (
 // Our new enumeration type.
 type FooModeTest Flag
 
-func (fm *FooModeTest) String() string     { return String(fm) }
-func (fm *FooModeTest) Set(s string) error { return Set(fm, s) }
-func (fm *FooModeTest) Enums() (interface{}, EnumCaseSensitivity) {
-	return FooModeIdentifiers, EnumCaseSensitive
+func (f *FooModeTest) String() string     { return String(f) }
+func (f *FooModeTest) Set(s string) error { return Set(f, s) }
+func (f *FooModeTest) Enums() (interface{}, EnumCaseSensitivity) {
+	return FooModeTestIdentifiers, EnumCaseSensitive
 }
 
 // Enumeration constants/values.
 const (
-	Foo FooModeTest = iota
-	Bar
-	Baz
+	fmFoo FooModeTest = iota
+	fmBar
+	fmBaz
 )
 
 // Enumeration identifiers mapped to their corresponding constants.
-var FooModeIdentifiers = map[FooModeTest][]string{
-	Foo: {"foo"},
-	Bar: {"bar", "Bar"},
-	Baz: {"baz"},
+var FooModeTestIdentifiers = map[FooModeTest][]string{
+	fmFoo: {"foo"},
+	fmBar: {"bar", "Bar"},
+	fmBaz: {"baz"},
+}
+
+// Another new enumeration type.
+type BarzModeTest Flag
+
+func (f *BarzModeTest) String() string     { return String(f) }
+func (f *BarzModeTest) Set(s string) error { return Set(f, s) }
+func (f *BarzModeTest) Enums() (interface{}, EnumCaseSensitivity) {
+	return BarzModeTestIdentifiers, EnumCaseSensitive
+}
+
+const (
+	bmbarz BarzModeTest = iota
+	bmBarz
+	bmBARZ
+)
+
+var BarzModeTestIdentifiers = map[BarzModeTest][]string{
+	bmbarz: {"barz"},
+	bmBarz: {"Barz"},
+	bmBARZ: {"BARZ"},
+}
+
+type Wrong Flag
+
+func (w *Wrong) String() string     { return String(w) }
+func (w *Wrong) Set(s string) error { return Set(w, s) }
+func (w *Wrong) Enums() (interface{}, EnumCaseSensitivity) {
+	return "foobar", EnumCaseSensitive
 }
 
 var _ = Describe("flag", func() {
 
 	It("returns the canonical textual representation", func() {
-		foomode := Bar
-		Expect(foomode.String()).To(Equal(FooModeIdentifiers[Bar][0]))
+		foomode := fmBar
+		Expect(foomode.String()).To(Equal(FooModeTestIdentifiers[fmBar][0]))
 	})
 
 	It("denies setting invalid values", func() {
@@ -58,8 +87,24 @@ var _ = Describe("flag", func() {
 
 	It("sets the enumeration value from text", func() {
 		var foomode FooModeTest
+		var barzmode BarzModeTest
+
+		Expect(foomode.Set("foo")).NotTo(HaveOccurred())
+		Expect(barzmode.Set("BARZ")).NotTo(HaveOccurred())
 		Expect(foomode.Set("Bar")).NotTo(HaveOccurred())
-		Expect(foomode).To(Equal(Bar))
+
+		Expect(foomode).To(Equal(fmBar))
+		Expect(barzmode).To(Equal(bmBARZ))
+	})
+
+	It("accepts only uint/int enum flags", func() {
+		var sf string
+		Expect(func() { _ = Set(sf, "6.66") }).To(Panic())
+	})
+
+	It("checks for a map", func() {
+		var w Wrong
+		Expect(func() { _ = w.Set("abc") }).To(Panic())
 	})
 
 })
