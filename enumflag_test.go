@@ -46,7 +46,7 @@ var _ = Describe("flag", func() {
 		Expect(val.Type()).To(Equal("mode"))
 	})
 
-	It("denies setting invalid values", func() {
+	It("rejects setting invalid values", func() {
 		var foomode FooModeTest
 		val := enumflag.New(&foomode, "mode", FooModeIdentifiersTest, enumflag.EnumCaseSensitive)
 		err := val.Set("FOOBAR")

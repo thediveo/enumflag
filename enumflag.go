@@ -40,12 +40,23 @@ const (
 	EnumCaseSensitive   EnumCaseSensitivity = true
 )
 
+// EnumValue wraps a user-defined enum type value and implements the pflag.Value
+// interface, so the user's enum type value can directly be used with the fine
+// pflag drop-in package for Golang CLI flags.
+type EnumValue struct {
+	value       interface{}         // enum value of a user-defined enum type.
+	enumtype    string              // name of the user-defined enum type.
+	names       enumValueNames      // enum value names.
+	sensitivity EnumCaseSensitivity // case sensitive or insensitive?
+	flagtype    reflect.Type        // cached enum reflection type.
+}
+
 // New wraps a given enum variable so that it can be used as a flag Value with
 // pflag.Var and pflag.VarP. The specified flag must be a pointer to a
 // user-defined enum value, as otherwise the flag value cannot be managed
 // (changed) later on, when a CLI user tries to set it via its corresponding CLI
 // flag.
-func New(flag interface{}, typename string, mapping interface{}, sensitivity EnumCaseSensitivity) *enumValue {
+func New(flag interface{}, typename string, mapping interface{}, sensitivity EnumCaseSensitivity) *EnumValue {
 	// Ensure that the specified enumeration variable is of a compatible type
 	// and that it actually is a pointer to the enum value.
 	flagtype := reflect.TypeOf(flag)
@@ -53,7 +64,17 @@ func New(flag interface{}, typename string, mapping interface{}, sensitivity Enu
 		panic(fmt.Sprintf(
 			"New requires flag to be a pointer to an enum value in order to manage it"))
 	}
-	flagtype = flagtype.Elem()
+	return newEnumValue(flag, typename, mapping, sensitivity)
+}
+
+// newEnumValue returns a correctly set up new EnumValue. It expects the flag
+// var to be either a pointer or a pointer to the slice, and the caller to have
+// checked this before calling.
+func newEnumValue(flag interface{}, typename string, mapping interface{}, sensitivity EnumCaseSensitivity) *EnumValue {
+	flagtype := reflect.TypeOf(flag).Elem()
+	if flagtype.Kind() == reflect.Slice {
+		flagtype = flagtype.Elem()
+	}
 	flagtypename := flagtype.Name()
 	if !flagtype.ConvertibleTo(uintType) {
 		panic(fmt.Sprintf("incompatible enum value type %s", flagtypename))
@@ -84,47 +105,47 @@ func New(flag interface{}, typename string, mapping interface{}, sensitivity Enu
 	// Finally return the Value-compatible wrapper, which now has the necessary
 	// information about the mapping and case sensitivity, as well as the other
 	// things.
-	return &enumValue{
+	return &EnumValue{
 		value:       flag,
 		enumtype:    typename,
 		names:       enummap,
 		sensitivity: sensitivity,
+		flagtype:    flagtype,
 	}
 }
 
-// enumValue wraps a user-defined enum type value and implements the pflag.Value
-// interface, so the user's enum type value can directly be used with the fine
-// pflag drop-in package for Golang CLI flags.
-type enumValue struct {
-	value       interface{}         // enum value of a user-defined enum type.
-	enumtype    string              // name of the user-defined enum type.
-	names       enumValueNames      // enum value names.
-	sensitivity EnumCaseSensitivity // case sensitive or insensitive?
-}
-
 // Get returns the managed enum value as a convenience.
-func (e *enumValue) Get() interface{} {
+func (e *EnumValue) Get() interface{} {
 	return e.value
 }
 
 // Set sets the enum flag to the specified enum value. If the specified value
 // isn't a valid enum value, then the enum flag will be unchanged and an error
 // returned instead.
-func (e *enumValue) Set(val string) error {
+func (e *EnumValue) Set(val string) error {
+	enumcode, err := e.code(val)
+	if err == nil {
+		// When creating our enum flag wrapper we made sure it has a value
+		// reference, so we don't need to double-check here again, but now access it
+		// always indirectly.
+		reflect.ValueOf(e.value).Elem().Set(
+			reflect.ValueOf(enumcode).Convert(e.flagtype))
+	}
+	return err
+}
+
+// code parses the textual representation of an enumeration value, returning the
+// corresponding enumeration value, or an error.
+func (e *EnumValue) code(val string) (Flag, error) {
 	if e.sensitivity == EnumCaseInsensitive {
 		val = strings.ToLower(val)
 	}
-	// When creating our enum flag wrapper we made sure it has a value
-	// reference, so we don't need to double-check here again, but now access it
-	// always indirectly.
-	flagval := reflect.ValueOf(e.value).Elem()
 	// Try to find a matching enum value textual representation, and then take
 	// its enumation value ("code").
 	for enumval, ids := range e.names {
 		for _, id := range ids {
 			if val == id {
-				flagval.Set(reflect.ValueOf(enumval).Convert(flagval.Type()))
-				return nil
+				return enumval, nil
 			}
 		}
 	}
@@ -141,14 +162,14 @@ func (e *enumValue) Set(val string) error {
 		allids = append(allids, strings.Join(s, "/"))
 	}
 	sort.Strings(allids)
-	return fmt.Errorf("must be %s", strings.Join(allids, ", "))
+	return 0, fmt.Errorf("must be %s", strings.Join(allids, ", "))
 }
 
 // String returns the textual representation of an enumeration (flag) value. In
 // case multiple textual representations (=identifiers) exist for the same
 // enumeration value, then only the first textual representation is returned,
 // which is considered to be the canonical one.
-func (e *enumValue) String() string {
+func (e *EnumValue) String() string {
 	flagval := reflect.ValueOf(e.value).Elem()
 	if ids, ok := e.names[flagval.Convert(enumFlagType).Interface().(Flag)]; ok {
 		if len(ids) > 0 {
@@ -160,7 +181,7 @@ func (e *enumValue) String() string {
 
 // Type returns the name of the flag value type. The type name is used in error
 // message.
-func (e *enumValue) Type() string {
+func (e *EnumValue) Type() string {
 	return e.enumtype
 }
 
