@@ -21,59 +21,108 @@ import (
 	"strings"
 )
 
-// Flag represents a CLI (enumeration) flag which can take on only a
-// single enumeration value out of a fixed set of enumeration values.
-// Applications using the enumflag package might want to derive their
-// enumeration flags from Flag, such as "type MyFoo enumflag.Flag"
+// Flag represents a CLI (enumeration) flag which can take on only a single
+// enumeration value out of a fixed set of enumeration values. Applications
+// using the enumflag package might want to derive their enumeration flags from
+// Flag, such as "type MyFoo enumflag.Flag", but they don't need to. The only
+// requirement for user-defined enumeration flags is that they must be
+// compatible with the Flag type.
 type Flag uint
-
-// Mapper returns the mapping between enumeration values and their
-// corresponding textual representations. If multiple textual representations
-// exist for the same enumeration value, then the first textual representation
-// is considered to be canonical and the one returned by String() when applied
-// on an enumeration flag. Enumeration flags must implement this interface in
-// order to be managed by the enumflag package.
-type Mapper interface {
-	Enums() (interface{}, EnumCaseSensitivity)
-}
 
 // EnumCaseSensitivity specifies whether the textual representations of enum
 // values are considered to be case sensitive, or not.
 type EnumCaseSensitivity bool
 
 // Controls whether the textual representations for enum values are case
-// sensitive, or not. If they are case insensitive, then the textual
-// representation must be registered in lower case.
+// sensitive, or not.
 const (
-	EnumCaseInsensitive EnumCaseSensitivity = false // case insensitive textual representations
-	EnumCaseSensitive   EnumCaseSensitivity = true  // case sensitive textual representations
+	EnumCaseInsensitive EnumCaseSensitivity = false
+	EnumCaseSensitive   EnumCaseSensitivity = true
 )
 
-// String returns the textual representation of an enumeration (flag) value.
-// In case multiple textual representations (identifiers) exist for the same
-// enumeration value, then only the first one is returned, which is considered
-// to be the canonical textual representation.
-func String(flag interface{}) string {
-	idmap := cachedMapping(flag)
-	flagval := reflect.ValueOf(flag)
-	if flagval.Kind() == reflect.Ptr {
-		flagval = flagval.Elem()
+// New wraps a given enum variable so that it can be used as a flag Value with
+// pflag.Var and pflag.VarP. The specified flag must be a pointer to a
+// user-defined enum value, as otherwise the flag value cannot be managed
+// (changed) later on, when a CLI user tries to set it via its corresponding CLI
+// flag.
+func New(flag interface{}, typename string, mapping interface{}, sensitivity EnumCaseSensitivity) *enumValue {
+	// Ensure that the specified enumeration variable is of a compatible type
+	// and that it actually is a pointer to the enum value.
+	flagtype := reflect.TypeOf(flag)
+	if flagtype.Kind() != reflect.Ptr {
+		panic(fmt.Sprintf(
+			"New requires flag to be a pointer to an enum value in order to manage it"))
 	}
-	return idmap.EnumIdentifiers[flagval.Convert(enumFlagType).Interface().(Flag)][0]
+	flagtype = flagtype.Elem()
+	flagtypename := flagtype.Name()
+	if !flagtype.ConvertibleTo(uintType) {
+		panic(fmt.Sprintf("incompatible enum value type %s", flagtypename))
+	}
+	// Next, ensure that the enumeration values (in form of textual
+	// representations) actually are stored in a map.
+	mappingrval := reflect.ValueOf(mapping)
+	if mappingrval.Kind() != reflect.Map || !mappingrval.Type().Key().ConvertibleTo(uintType) {
+		panic(fmt.Sprintf("incompatible enum values map type %s",
+			mappingrval.Type().Name()))
+	}
+	// Oh, the magic of Golang reflexions makes us put on our beer googles, erm,
+	// goggles: we now convert the specified enum values into our "canonical"
+	// mapping. While we can (mostly) keep the map values (which are string
+	// slices), we have to convert the map keys into our canonical EnumFlag key
+	// type (=enum values type).
+	enummap := enumValueNames{}
+	for _, key := range mappingrval.MapKeys() {
+		names := mappingrval.MapIndex(key).Interface().([]string)
+		if sensitivity == EnumCaseInsensitive {
+			names = append(names[:0:0], names...) // https://github.com/golang/go/wiki/SliceTricks
+			for idx, name := range names {
+				names[idx] = strings.ToLower(name)
+			}
+		}
+		enummap[key.Convert(enumFlagType).Interface().(Flag)] = names
+	}
+	// Finally return the Value-compatible wrapper, which now has the necessary
+	// information about the mapping and case sensitivity, as well as the other
+	// things.
+	return &enumValue{
+		value:       flag,
+		enumtype:    typename,
+		names:       enummap,
+		sensitivity: sensitivity,
+	}
 }
 
-// Set sets an enumeration flag to the value corresponding with the given
-// textual representation. It returns an error if the textual representation
-// doesn't match any registered one for the given enumeration flag.
-func Set(flag interface{}, s string) error {
-	idmap := cachedMapping(flag)
-	if idmap.EnumCaseSensitivity == EnumCaseInsensitive {
-		s = strings.ToLower(s)
+// enumValue wraps a user-defined enum type value and implements the pflag.Value
+// interface, so the user's enum type value can directly be used with the fine
+// pflag drop-in package for Golang CLI flags.
+type enumValue struct {
+	value       interface{}         // enum value of a user-defined enum type.
+	enumtype    string              // name of the user-defined enum type.
+	names       enumValueNames      // enum value names.
+	sensitivity EnumCaseSensitivity // case sensitive or insensitive?
+}
+
+// Get returns the managed enum value as a convenience.
+func (e *enumValue) Get() interface{} {
+	return e.value
+}
+
+// Set sets the enum flag to the specified enum value. If the specified value
+// isn't a valid enum value, then the enum flag will be unchanged and an error
+// returned instead.
+func (e *enumValue) Set(val string) error {
+	if e.sensitivity == EnumCaseInsensitive {
+		val = strings.ToLower(val)
 	}
-	flagval := reflect.ValueOf(flag).Elem()
-	for enumval, ids := range idmap.EnumIdentifiers {
+	// When creating our enum flag wrapper we made sure it has a value
+	// reference, so we don't need to double-check here again, but now access it
+	// always indirectly.
+	flagval := reflect.ValueOf(e.value).Elem()
+	// Try to find a matching enum value textual representation, and then take
+	// its enumation value ("code").
+	for enumval, ids := range e.names {
 		for _, id := range ids {
-			if s == id {
+			if val == id {
 				flagval.Set(reflect.ValueOf(enumval).Convert(flagval.Type()))
 				return nil
 			}
@@ -84,7 +133,7 @@ func Set(flag interface{}, s string) error {
 	// We're ordering values by their canonical names in order to achieve a
 	// stable error message.
 	allids := []string{}
-	for _, ids := range idmap.EnumIdentifiers {
+	for _, ids := range e.names {
 		s := []string{}
 		for _, id := range ids {
 			s = append(s, "'"+id+"'")
@@ -95,77 +144,32 @@ func Set(flag interface{}, s string) error {
 	return fmt.Errorf("must be %s", strings.Join(allids, ", "))
 }
 
-// EnumIdentifiers maps enumeration values to their corresponding textual
+// String returns the textual representation of an enumeration (flag) value. In
+// case multiple textual representations (=identifiers) exist for the same
+// enumeration value, then only the first textual representation is returned,
+// which is considered to be the canonical one.
+func (e *enumValue) String() string {
+	flagval := reflect.ValueOf(e.value).Elem()
+	if ids, ok := e.names[flagval.Convert(enumFlagType).Interface().(Flag)]; ok {
+		if len(ids) > 0 {
+			return ids[0]
+		}
+	}
+	return "<unknown>"
+}
+
+// Type returns the name of the flag value type. The type name is used in error
+// message.
+func (e *enumValue) Type() string {
+	return e.enumtype
+}
+
+// enumValueNames maps enumeration values to their corresponding textual
 // representations. This mapping is a one-to-many mapping in that the same
 // enumeration value may have more than only one associated textual
 // representation.
-type EnumIdentifiers map[Flag][]string
-
-// enumTypeCache maps individual enumeration types to their enumeration
-// mappings, where these mappings associate enumeration values with textual
-// representations. Additionally, the cache also stores whether the textual
-// representations are case sensitive or not.
-var enumTypeCache = map[string]enumTypeCacheEntry{}
-
-// enumTypeCache stores the mapping between enum values and textual
-// representations, as well as the case sensitivity, for a single specific
-// enumeration type.
-type enumTypeCacheEntry struct {
-	EnumIdentifiers
-	EnumCaseSensitivity
-}
+type enumValueNames map[Flag][]string
 
 // Reflection types used in this package.
 var enumFlagType = reflect.TypeOf(Flag(0))
 var uintType = reflect.TypeOf(uint(0))
-
-// cachedMapping returns the enumeration value-to-textual identifiers mapping
-// for the enumeration type of the specified value. For better performance, it
-// will automatically cache these mappings after it has converted them into
-// our internal canonical format.
-func cachedMapping(flag interface{}) enumTypeCacheEntry {
-	// Do we already have this enumeration flag type in our cache? If so, then
-	// return the cached mapping, based on the enum flag type.
-	flagval := reflect.ValueOf(flag)
-	if flagval.Kind() == reflect.Ptr { // ...be forgiving in the receiver type.
-		flagval = flagval.Elem()
-	}
-	flagtype := flagval.Type()
-	flagtypename := flagtype.Name()
-	if cacheentry, ok := enumTypeCache[flagtypename]; ok {
-		return cacheentry
-	}
-	// Nothing was cached so far, so we now need to ask this new type for
-	// its enum mapping, convert that into our canonical representation,
-	// and then cache it. First, make sure that the enumeration type is
-	// compatible with our enumeration flag mechanism.
-	if !flagtype.ConvertibleTo(uintType) {
-		panic(fmt.Sprintf("incompatible enumeration type %s", flagtypename))
-	}
-	// Next, ensure that the enumeration value-to-textual ids map actually
-	// is a map. Please note that we must not use "flagval" here, as it
-	// might have been dereferences in case of a pointer to an enum flag:
-	// this would then forbid us to convert the enum flag into a Mapper
-	// interface.
-	enumids, sensitivity := reflect.ValueOf(flag).Interface().(Mapper).Enums()
-	enumidsrval := reflect.ValueOf(enumids)
-	if enumidsrval.Kind() != reflect.Map {
-		panic(fmt.Sprintf("incompatible enumeration identifiers map type %s",
-			enumidsrval.Type().Name()))
-	}
-	// Oh, the magic of Golang reflexions makes us put on our beer googles,
-	// erm, goggles: we now convert the specified enum values to enum textual
-	// representations mapping into our "canonical" mapping. While we can keep
-	// the map values (which are string slices), we have to convert the map
-	// keys into our canonical EnumFlag key type (=enum values type).
-	cacheentry := enumTypeCacheEntry{
-		EnumIdentifiers:     EnumIdentifiers{},
-		EnumCaseSensitivity: sensitivity,
-	}
-	for _, key := range enumidsrval.MapKeys() {
-		cacheentry.EnumIdentifiers[key.Convert(enumFlagType).Interface().(Flag)] =
-			enumidsrval.MapIndex(key).Interface().([]string)
-	}
-	enumTypeCache[flagtypename] = cacheentry
-	return cacheentry
-}

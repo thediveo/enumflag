@@ -12,21 +12,16 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-package enumflag
+package enumflag_test
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/thediveo/enumflag"
 )
 
 // Our new enumeration type.
-type FooModeTest Flag
-
-func (f *FooModeTest) String() string     { return String(f) }
-func (f *FooModeTest) Set(s string) error { return Set(f, s) }
-func (f *FooModeTest) Enums() (interface{}, EnumCaseSensitivity) {
-	return FooModeTestIdentifiers, EnumCaseSensitive
-}
+type FooModeTest enumflag.Flag
 
 // Enumeration constants/values.
 const (
@@ -36,75 +31,65 @@ const (
 )
 
 // Enumeration identifiers mapped to their corresponding constants.
-var FooModeTestIdentifiers = map[FooModeTest][]string{
+var FooModeIdentifiersTest = map[FooModeTest][]string{
 	fmFoo: {"foo"},
 	fmBar: {"bar", "Bar"},
 	fmBaz: {"baz"},
-}
-
-// Another new enumeration type.
-type BarzModeTest Flag
-
-func (f *BarzModeTest) String() string     { return String(f) }
-func (f *BarzModeTest) Set(s string) error { return Set(f, s) }
-func (f *BarzModeTest) Enums() (interface{}, EnumCaseSensitivity) {
-	return BarzModeTestIdentifiers, EnumCaseSensitive
-}
-
-const (
-	bmbarz BarzModeTest = iota
-	bmBarz
-	bmBARZ
-)
-
-var BarzModeTestIdentifiers = map[BarzModeTest][]string{
-	bmbarz: {"barz"},
-	bmBarz: {"Barz"},
-	bmBARZ: {"BARZ"},
-}
-
-type Wrong Flag
-
-func (w *Wrong) String() string     { return String(w) }
-func (w *Wrong) Set(s string) error { return Set(w, s) }
-func (w *Wrong) Enums() (interface{}, EnumCaseSensitivity) {
-	return "foobar", EnumCaseSensitive
 }
 
 var _ = Describe("flag", func() {
 
 	It("returns the canonical textual representation", func() {
 		foomode := fmBar
-		Expect(foomode.String()).To(Equal(FooModeTestIdentifiers[fmBar][0]))
+		val := enumflag.New(&foomode, "mode", FooModeIdentifiersTest, enumflag.EnumCaseInsensitive)
+		Expect(val.String()).To(Equal(FooModeIdentifiersTest[fmBar][0]))
+		Expect(val.Type()).To(Equal("mode"))
 	})
 
 	It("denies setting invalid values", func() {
 		var foomode FooModeTest
-		err := foomode.Set("FOOBAR")
+		val := enumflag.New(&foomode, "mode", FooModeIdentifiersTest, enumflag.EnumCaseSensitive)
+		err := val.Set("FOOBAR")
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(Equal("must be 'bar'/'Bar', 'baz', 'foo'"))
 	})
 
 	It("sets the enumeration value from text", func() {
 		var foomode FooModeTest
-		var barzmode BarzModeTest
+		val := enumflag.New(&foomode, "mode", FooModeIdentifiersTest, enumflag.EnumCaseSensitive)
 
-		Expect(foomode.Set("foo")).NotTo(HaveOccurred())
-		Expect(barzmode.Set("BARZ")).NotTo(HaveOccurred())
-		Expect(foomode.Set("Bar")).NotTo(HaveOccurred())
-
+		Expect(val.Set("foo")).NotTo(HaveOccurred())
+		Expect(val.Set("Bar")).NotTo(HaveOccurred())
 		Expect(foomode).To(Equal(fmBar))
-		Expect(barzmode).To(Equal(bmBARZ))
+		Expect(*val.Get().(*FooModeTest)).To(Equal(fmBar))
 	})
 
-	It("accepts only uint/int enum flags", func() {
+	It("accepts only uint/int enum flags by reference", func() {
 		var sf string
-		Expect(func() { _ = Set(sf, "6.66") }).To(Panic())
+		Expect(func() {
+			_ = enumflag.New(&sf, "string", FooModeIdentifiersTest, enumflag.EnumCaseSensitive)
+		}).To(Panic())
+		var foomode FooModeTest
+		Expect(func() {
+			_ = enumflag.New(foomode, "mode", "abc", enumflag.EnumCaseSensitive)
+		}).To(Panic())
 	})
 
-	It("checks for a map", func() {
-		var w Wrong
-		Expect(func() { _ = w.Set("abc") }).To(Panic())
+	It("checks for a compatible map", func() {
+		var foomode FooModeTest
+		Expect(func() {
+			_ = enumflag.New(&foomode, "mode", "abc", enumflag.EnumCaseInsensitive)
+		}).To(Panic())
+		ids := map[string][]string{}
+		Expect(func() {
+			_ = enumflag.New(&foomode, "mode", ids, enumflag.EnumCaseInsensitive)
+		}).To(Panic())
+	})
+
+	It("returns <unknown> if enum value is unknown", func() {
+		foomode := FooModeTest(42)
+		val := enumflag.New(&foomode, "mode", FooModeIdentifiersTest, enumflag.EnumCaseInsensitive)
+		Expect(val.String()).To(Equal("<unknown>"))
 	})
 
 })

@@ -32,65 +32,54 @@ import (
     "github.com/thediveo/enumflag"
 )
 
-// ① Defines a new enum flag type.
+// ① Define your new enum flag type. It can be derived from enumflag.Flag, but
+// it doesn't need to be as long as it is compatible with enumflag.Flag, so
+// either an int or uint.
 type FooMode enumflag.Flag
 
-// ② Defines the enumeration values for our new FooMode enum flag type.
+// ② Define the enumeration values for FooMode.
 const (
     Foo FooMode = iota
     Bar
 )
 
-// ③ Implements the methods required by spf13/cobra in order to use the enum as
-// a flag.
-func (f *FooMode) String() string     { return enumflag.String(f) }
-func (f *FooMode) Set(s string) error { return enumflag.Set(f, s) }
-func (f *FooMode) Type() string       { return "foomode" }
-
-// ④ Implements the method required by enumflag to map enum values to their
-// textual identifiers.
-func (f *FooMode) Enums() (interface{}, enumflag.EnumCaseSensitivity) {
-    return map[FooMode][]string{
-        Foo: {"foo"},
-        Bar: {"bar"},
-    }, enumflag.EnumCaseInsensitive
+// ③ Map enumeration values to their textual representations (value
+// identifiers).
+var FooModeIds = map[FooMode][]string{
+    Foo: {"foo"},
+    Bar: {"bar"},
 }
 
-// ⑤ Now use the FooMode enum flag.
+// ④ Now use the FooMode enum flag.
 var foomode FooMode
 
 func main() {
     rootCmd := &cobra.Command{
-        Run: func(_ *cobra.Command, _ []string) {
-            fmt.Printf("mode is: %d=%q\n", foomode, foomode.String())
+        Run: func(cmd *cobra.Command, _ []string) {
+            fmt.Printf("mode is: %d=%q\n",
+                foomode,
+                cmd.PersistentFlags().Lookup("mode").Value.String())
         },
     }
-    // ⑥ Define the parameters for our FooMode enum flag.
+    // ⑤ Define the CLI flag parameters for your wrapped enum flag.
     rootCmd.PersistentFlags().VarP(
-        &foomode,
+        enumflag.New(&foomode, "mode", FooModeIds, enumflag.EnumCaseInsensitive),
         "mode", "m",
         "foos the output; can be 'foo' or 'bar'")
+
     rootCmd.SetArgs([]string{"--mode", "bAr"})
     _ = rootCmd.Execute()
 }
 ```
 
-> **Important:** always define a separate type for each of your enumeration
-> flag types. Behind the scenes, `enumflag` caches the enum mappings based on
-> enumeration flag type.
-
-The boilerplate pattern is always the same; unfortunately due to the Golang
-language design we have to live with this boilerplate.
+The boilerplate pattern is always the same:
 
 1. Define your own new enumeration type, such as `type FooMode enumflag.Flag`.
 2. Define the constants in your enumeration.
-3. Implement the methods `String` and `Set` by routing them into
-   `enumflag.String` and `enumflag.Set` respectively. Make sure your `Type`
-   method returns some sensible and especially unique flag type name.
-4. Implement method `Enums` to return the enum value to textual representation
-   mapping, as well as the desired case sensitivity.
-5. Somewhere, declare a flag variable of your enum flag type.
-6. Wire up your flag variable to its flag long and short names, et cetera.
+3. Define the mapping of the constants onto enum values (textual
+   representations).
+4. Somewhere, declare a flag variable of your enum flag type.
+5. Wire up your flag variable to its flag long and short names, et cetera.
 
 ## Copyright and License
 
