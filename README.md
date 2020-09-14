@@ -38,7 +38,14 @@ But if you instead want to handle one-of-a-set flags as properly typed
 enumerations instead of strings, or if you need (multiple-of-a-set) slice
 support, then please read on.
 
-## How To Use: Properly Typed Enum Flag
+## How To Use
+
+- [start with your own enum types](#start-with-your-own-enum-types),
+- [use existing enum types and non-zero defaults](#use-existing-enum-types),
+- [CLI flag with default](#cli-flag-with-default),
+- [slice of enums](#slice-of-enums).
+
+### Start With Your Own Enum Types
 
 Without further ado, here's how to define and use enum flags in your own
 applications...
@@ -69,7 +76,8 @@ var FooModeIds = map[FooMode][]string{
     Bar: {"bar"},
 }
 
-// ④ Now use the FooMode enum flag.
+// ④ Now use the FooMode enum flag. If you want a non-zero default, then simply
+// set it here, such as in "foomode = Bar".
 var foomode FooMode
 
 func main() {
@@ -98,9 +106,104 @@ The boilerplate pattern is always the same:
 3. Define the mapping of the constants onto enum values (textual
    representations).
 4. Somewhere, declare a flag variable of your enum flag type.
+   - If you want to use a non-zero default enum value, just go ahead and set
+     it: `var foomode = Bar`. It will be used correctly.
 5. Wire up your flag variable to its flag long and short names, et cetera.
 
-## How To Use: Slice of Enums
+### Use Existing Enum Types
+
+A typical example might be your application using a 3rd party logging package
+and you want to offer a `-v` log level CLI flag. Here, we use the existing 3rd
+party enum values and set a non-zero default for our logging CLI flag.
+
+Considering the boiler plate shown above, we can now leave out steps ① and ②,
+because these definitions come from a 3rd party package. We only need to
+supply the textual enum names as ③.
+
+```go
+import (
+    "fmt"
+    "os"
+
+    log "github.com/sirupsen/logrus"
+    "github.com/spf13/cobra"
+    "github.com/thediveo/enumflag"
+)
+
+func main() {
+    // ①+② skip "define your own enum flag type" and enumeration values, as we
+    // already have a 3rd party one.
+
+    // ③ Map 3rd party enumeration values to their textual representations
+    var LoglevelIds = map[log.Level][]string{
+        log.TraceLevel: {"trace"},
+        log.DebugLevel: {"debug"},
+        log.InfoLevel:  {"info"},
+        log.WarnLevel:  {"warning", "warn"},
+        log.ErrorLevel: {"error"},
+        log.FatalLevel: {"fatal"},
+        log.PanicLevel: {"panic"},
+    }
+
+    // ④ Define your enum flag value and set the your logging default value.
+    var loglevel log.Level = log.WarnLevel
+
+    rootCmd := &cobra.Command{
+        Run: func(cmd *cobra.Command, _ []string) {
+            fmt.Printf("logging level is: %d=%q\n",
+                loglevel,
+                cmd.PersistentFlags().Lookup("log").Value.String())
+        },
+    }
+
+    // ⑤ Define the CLI flag parameters for your wrapped enum flag.
+    rootCmd.PersistentFlags().Var(
+        enumflag.New(&loglevel, "log", LoglevelIds, enumflag.EnumCaseInsensitive),
+        "log",
+        "sets logging level; can be 'trace', 'debug', 'info', 'warn', 'error', 'fatal', 'panic'")
+
+    // Defaults to what we set above: warn level.
+    _ = rootCmd.Execute()
+
+    // User specifies a specific level, such as log level. 
+    rootCmd.SetArgs([]string{"--log", "debug"})
+    _ = rootCmd.Execute()
+}
+```
+
+### CLI Flag With Default
+
+Sometimes you might want a CLI enum flag to have a default value when the user
+specifies the CLI flag, but not its value. A good example is the `--color`
+flag of the `ls` command:
+
+- if just specified as `--color` without a value, it
+will default to the value of `auto`;
+- otherwise, as specific value can be given, such as
+  - `--color=always`,
+  - `--color=never`,
+  - or even `--color=auto`.
+
+In such situations, use spf13/pflags's
+[`NoOptDefVal`](https://godoc.org/github.com/spf13/pflag#Flag) to set the
+flag's default value *as text*, if the flag is on the command line without any
+options.
+
+The gist here is as follows, please see also
+[colormode.go](https://github.com/TheDiveO/lxkns/blob/master/cmd/internal/pkg/style/colormode.go)
+from my [lxkns](https://github.com/TheDiveO/lxkns) Linux namespaces discovery
+project:
+
+```go
+rootCmd.PersistentFlags().VarP(
+    enumflag.New(&colorize, "color", colorModeIds, enumflag.EnumCaseSensitive),
+    "color", "c",
+    "colorize the output; can be 'always' (default if omitted), 'auto',\n"+
+        "or 'never'")
+rootCmd.PersistentFlags().Lookup("color").NoOptDefVal = "always"
+```
+
+### Slice of Enums
 
 For a slice of enumerations, simply declare your variable to be a slice of your
 enumeration type and then use `enumflag.NewSlice(...)` instead of
