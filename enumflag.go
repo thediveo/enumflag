@@ -176,7 +176,7 @@ func (e *EnumValue) String() string {
 			return ids[0]
 		}
 	}
-	return "<unknown>"
+	return "<nil>"
 }
 
 // Type returns the name of the flag value type. The type name is used in error
