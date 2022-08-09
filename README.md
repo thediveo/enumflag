@@ -1,10 +1,9 @@
 # CLI Enumeration Flags
-
 [![GoDoc](https://godoc.org/github.com/thediveo/enumflag?status.svg)](http://godoc.org/github.com/thediveo/enumflag)
 [![GitHub](https://img.shields.io/github/license/thediveo/enumflag)](https://img.shields.io/github/license/thediveo/enumflag)
 ![build and test](https://github.com/thediveo/enumflag/workflows/build%20and%20test/badge.svg?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/thediveo/enumflag)](https://goreportcard.com/report/github.com/thediveo/enumflag)
-![Coverage](https://img.shields.io/badge/coverage-135.72%25-darkcyan)
+![Coverage](https://img.shields.io/badge/Coverage-100.0%25-brightgreen)
 
 `enumflag` is a Golang package which supplements the Golang CLI flag packages
 [spf13/cobra](https://github.com/spf13/cobra) and
@@ -263,7 +262,50 @@ func Example_slice() {
 }
 ```
 
+## VSCode Tasks
+
+The included `enumflag.code-workspace` defines the following tasks:
+
+- **View Go module documentation** task: installs `pkgsite`, if not done already
+  so, then starts `pkgsite` and opens VSCode's integrated ("simple") browser to
+  show the go-plugger/v2 documentation.
+
+- **Build workspace** task: builds all, including the shared library test
+  plugin.
+
+- **Run all tests with coverage** task: does what it says on the tin and runs
+  all tests with coverage.
+
+#### Aux Tasks
+
+- _pksite service_: auxilliary task to run `pkgsite` as a background service
+  using `scripts/pkgsite.sh`. The script leverages browser-sync and nodemon to
+  hot reload the Go module documentation on changes; many thanks to @mdaverde's
+  [_Build your Golang package docs
+  locally_](https://mdaverde.com/posts/golang-local-docs) for paving the way.
+  `scripts/pkgsite.sh` adds automatic installation of `pkgsite`, as well as the
+  `browser-sync` and `nodemon` npm packages for the local user.
+- _view pkgsite_: auxilliary task to open the VSCode-integrated "simple" browser
+  and pass it the local URL to open in order to show the module documentation
+  rendered by `pkgsite`. This requires a detour via a task input with ID
+  "_pkgsite_".
+
+## Make Targets
+
+- `make`: lists all targets.
+- `make coverage`: runs all tests with coverage and then **updates the coverage
+  badge in `README.md`**.
+- `make pkgsite`: installs [`x/pkgsite`](golang.org/x/pkgsite/cmd/pkgsite), as
+  well as the [`browser-sync`](https://www.npmjs.com/package/browser-sync) and
+  [`nodemon`](https://www.npmjs.com/package/nodemon) npm packages first, if not
+  already done so. Then runs the `pkgsite` and hot reloads it whenever the
+  documentation changes.
+- `make report`: installs
+  [`@gojp/goreportcard`](https://github.com/gojp/goreportcard) if not yet done
+  so and then runs it on the code base.
+- `make test`: runs all tests.
+
 ## Copyright and License
 
-`lxkns` is Copyright 2020 Harald Albrecht, and licensed under the Apache
+`lxkns` is Copyright 2020, 2022 Harald Albrecht, and licensed under the Apache
 License, Version 2.0.
