@@ -8,7 +8,8 @@
 `enumflag` is a Golang package which supplements the Golang CLI flag packages
 [spf13/cobra](https://github.com/spf13/cobra) and
 [spf13/pflag](https://github.com/spf13/pflag) with enumeration flags, including
-support for enumeration slices.
+support for enumeration slices. Thanks to Go generics, `enumflag` provides
+type-safe enumeration flags (but requires Go 1.18 or later).
 
 For instance, users can specify enum flags as `--mode=foo` or `--mode=bar`,
 where `foo` and `bar` are valid enumeration values. Other values which are not

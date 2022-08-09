@@ -21,7 +21,24 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestLinuxKernelNamespaces(t *testing.T) {
+// Our new enumeration type.
+type FooModeTest Flag
+
+// Enumeration constants/values.
+const (
+	fmFoo FooModeTest = iota + 1
+	fmBar
+	fmBaz
+)
+
+// Enumeration identifiers mapped to their corresponding constants.
+var FooModeIdentifiersTest = map[FooModeTest][]string{
+	fmFoo: {"foo"},
+	fmBar: {"bar", "Bar"},
+	fmBaz: {"baz"},
+}
+
+func TestEnumFlag(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "enumflag")
 }
