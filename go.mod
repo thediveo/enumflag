@@ -1,4 +1,4 @@
-module github.com/thediveo/enumflag
+module github.com/thediveo/enumflag/v2
 
 go 1.18
 

@@ -8,8 +8,13 @@
 `enumflag` is a Golang package which supplements the Golang CLI flag packages
 [spf13/cobra](https://github.com/spf13/cobra) and
 [spf13/pflag](https://github.com/spf13/pflag) with enumeration flags, including
-support for enumeration slices. Thanks to Go generics, `enumflag` provides
-type-safe enumeration flags (but requires Go 1.18 or later).
+support for enumeration slices. Thanks to Go generics, `enumflag/v2` now
+provides type-safe enumeration flags (and thus requires Go 1.18 or later).
+
+> The v2 API is source-compatible with v0 unless you've used the `Get()` method
+> in the past. However, since the use of Go generics might be a breaking change
+> to downstream projects the semantic major version of `enumflag` thus went from
+> v0 straight to v2.
 
 For instance, users can specify enum flags as `--mode=foo` or `--mode=bar`,
 where `foo` and `bar` are valid enumeration values. Other values which are not
@@ -19,8 +24,14 @@ enumeration values either with a single flag `--mode=foo,bar` or multiple flag
 calls, such as `--mode=foo --mode=bar`.
 
 Application programmers then simply deal with enumeration values in form of
-uints (or ints), liberated from parsing strings and validating enumeration
-flags.
+uints (or ints, _erm_, anything that satisfies `constraints.Integer`s),
+liberated from parsing strings and validating enumeration flags.
+
+## Installation
+
+```bash
+go get github.com/thediveo/enumflag/v2
+```
 
 ## Alternatives
 
@@ -55,12 +66,11 @@ import (
     "fmt"
 
     "github.com/spf13/cobra"
-    "github.com/thediveo/enumflag"
+    "github.com/thediveo/enumflag/v2"
 )
 
-// ① Define your new enum flag type. It can be derived from enumflag.Flag, but
-// it doesn't need to be as long as it is compatible with enumflag.Flag, so
-// either an int or uint.
+// ① Define your new enum flag type. It can be derived from enumflag.Flag,
+// but it doesn't need to be as long as it satisfies constraints.Integer.
 type FooMode enumflag.Flag
 
 // ② Define the enumeration values for FooMode.
@@ -76,8 +86,8 @@ var FooModeIds = map[FooMode][]string{
     Bar: {"bar"},
 }
 
-// ④ Now use the FooMode enum flag. If you want a non-zero default, then simply
-// set it here, such as in "foomode = Bar".
+// ④ Now use the FooMode enum flag. If you want a non-zero default, then
+// simply set it here, such as in "foomode = Bar".
 var foomode FooMode
 
 func main() {
@@ -127,7 +137,7 @@ import (
 
     log "github.com/sirupsen/logrus"
     "github.com/spf13/cobra"
-    "github.com/thediveo/enumflag"
+    "github.com/thediveo/enumflag/v2"
 )
 
 func main() {
@@ -214,12 +224,11 @@ import (
     "fmt"
 
     "github.com/spf13/cobra"
-    "github.com/thediveo/enumflag"
+    "github.com/thediveo/enumflag/v2"
 )
 
-// ① Define your new enum flag type. It can be derived from enumflag.Flag, but
-// it doesn't need to be as long as it is compatible with enumflag.Flag, so
-// either an int or uint.
+// ① Define your new enum flag type. It can be derived from enumflag.Flag,
+// but it doesn't need to be as long as it satisfies constraints.Integer.
 type MooMode enumflag.Flag
 
 // ② Define the enumeration values for FooMode.
@@ -237,11 +246,6 @@ var MooModeIds = map[MooMode][]string{
     Mimimi: {"mimimi"},
 }
 
-// User-defined enum flag types should be derived from "enumflag.Flag"; however
-// this is not strictly necessary as long as they can be converted into the
-// "enumflag.Flag" type. Actually, "enumflag.Flag" is just a fancy name for an
-// "uint". In order to use such user-defined enum flags as flag slices, simply
-// wrap them using enumflag.NewSlice.
 func Example_slice() {
     // ④ Define your enum slice flag value.
     var moomode []MooMode

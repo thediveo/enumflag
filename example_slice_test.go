@@ -4,12 +4,11 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/thediveo/enumflag"
+	"github.com/thediveo/enumflag/v2"
 )
 
-// ① Define your new enum flag type. It can be derived from enumflag.Flag, but
-// it doesn't need to be as long as it is compatible with enumflag.Flag, so
-// either an int or uint.
+// ① Define your new enum flag type. It can be derived from enumflag.Flag,
+// but it doesn't need to be as long as it satisfies constraints.Integer.
 type MooMode enumflag.Flag
 
 // ② Define the enumeration values for FooMode.
@@ -27,11 +26,6 @@ var MooModeIds = map[MooMode][]string{
 	Mimimi: {"mimimi"},
 }
 
-// User-defined enum flag types should be derived from "enumflag.Flag"; however
-// this is not strictly necessary as long as they can be converted into the
-// "enumflag.Flag" type. Actually, "enumflag.Flag" is just a fancy name for an
-// "uint". In order to use such user-defined enum flags as flag slices, simply
-// wrap them using enumflag.NewSlice.
 func Example_slice() {
 	// ④ Define your enum slice flag value.
 	var moomode []MooMode

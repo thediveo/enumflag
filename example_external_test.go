@@ -6,7 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/thediveo/enumflag"
+	"github.com/thediveo/enumflag/v2"
 )
 
 func init() {
