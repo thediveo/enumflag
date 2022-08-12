@@ -9,42 +9,42 @@ import (
 
 // ① Define your new enum flag type. It can be derived from enumflag.Flag,
 // but it doesn't need to be as long as it satisfies constraints.Integer.
-type FooMode enumflag.Flag
+type BarMode enumflag.Flag
 
-// ② Define the enumeration values for FooMode.
+// ② Define the enumeration values for BarMode.
 const (
-	Foo FooMode = iota
-	Bar
+	NoDefault         = iota // optional definition for "no default" zero value
+	Barr      BarMode = iota
+	Barz
 )
 
 // ③ Map enumeration values to their textual representations (value
 // identifiers).
-var FooModeIds = map[FooMode][]string{
-	Foo: {"foo"},
-	Bar: {"bar"},
+var BarModeIds = map[BarMode][]string{
+	// ...do NOT include/map the "no default" zero value!
+	Barr: {"barr"},
+	Barz: {"barz"},
 }
 
-func Example() {
+func Example_no_default_value() {
 	// ④ Define your enum flag value.
-	var foomode FooMode
+	var barmode BarMode
 	rootCmd := &cobra.Command{
 		Run: func(cmd *cobra.Command, _ []string) {
 			fmt.Printf("mode is: %d=%q\n",
-				foomode,
+				barmode,
 				cmd.PersistentFlags().Lookup("mode").Value.String())
 		},
 	}
 	// ⑤ Define the CLI flag parameters for your wrapped enum flag.
 	rootCmd.PersistentFlags().VarP(
-		enumflag.New(&foomode, "mode", FooModeIds, enumflag.EnumCaseInsensitive),
+		enumflag.NewWithoutDefault(&barmode, "mode", BarModeIds, enumflag.EnumCaseInsensitive),
 		"mode", "m",
-		"foos the output; can be 'foo' or 'bar'")
+		"bars the output; can be 'barr' or 'barz'")
 
-	// cobra's help will render the default enum value identifier...
+	// now cobra's help won't render the default enum value identifier anymore...
 	_ = rootCmd.Help()
 
-	// parse the CLI args to set our enum flag.
-	rootCmd.SetArgs([]string{"--mode", "bAr"})
 	_ = rootCmd.Execute()
 
 	// Output:
@@ -52,6 +52,6 @@ func Example() {
 	//    [flags]
 	//
 	// Flags:
-	//   -m, --mode mode   foos the output; can be 'foo' or 'bar' (default foo)
-	// mode is: 1="bar"
+	//   -m, --mode mode   bars the output; can be 'barr' or 'barz'
+	// mode is: 0=""
 }

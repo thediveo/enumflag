@@ -24,11 +24,11 @@ import (
 )
 
 // EnumIdentifiers maps enumeration values to their corresponding textual
-// representations. This mapping is a one-to-many mapping in that the same
-// enumeration value may have more than only one associated textual
-// representation. If more than one textual representation exists for the same
-// enumeration value, then the first textual representation is considered to be
-// the canonical one.
+// representations (~identifiers). This mapping is a one-to-many mapping in that
+// the same enumeration value may have more than only one associated textual
+// representation (indentifier). If more than one textual representation exists
+// for the same enumeration value, then the first textual representation is
+// considered to be the canonical one.
 type EnumIdentifiers[E constraints.Integer] map[E][]string
 
 // enumMapper is an optionally case insensitive map from enum values to their
@@ -47,14 +47,14 @@ func newEnumMapper[E constraints.Integer](mapping EnumIdentifiers[E], sensitivit
 	}
 }
 
-// Lookup returns the enum names/identifiers for the specified enum value, if
-// any; otherwise, returns a zero string slice.
+// Lookup returns the enum textual representations (identifiers) for the
+// specified enum value, if any; otherwise, returns a zero string slice.
 func (m enumMapper[E]) Lookup(enum E) (names []string) {
 	return m.m[enum]
 }
 
 // ValueOf returns the enumeration value corresponding with the specified
-// textual representation, or an error if no match is found.
+// textual representation (identifier), or an error if no match is found.
 func (m enumMapper[E]) ValueOf(name string) (E, error) {
 	comparefn := func(s string) bool { return s == name }
 	if m.sensitivity == EnumCaseInsensitive {

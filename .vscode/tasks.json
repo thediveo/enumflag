@@ -78,7 +78,7 @@
             "id": "pkgsite",
             "type": "command",
             "command": "simpleBrowser.api.open",
-            "args": "http://localhost:6060/github.com/thediveo/enumflag"
+            "args": "http://localhost:6060/github.com/thediveo/enumflag/v2"
         }
     ]
 }

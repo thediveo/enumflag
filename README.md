@@ -27,12 +27,6 @@ Application programmers then simply deal with enumeration values in form of
 uints (or ints, _erm_, anything that satisfies `constraints.Integer`s),
 liberated from parsing strings and validating enumeration flags.
 
-## Installation
-
-```bash
-go get github.com/thediveo/enumflag/v2
-```
-
 ## Alternatives
 
 In case you are just interested in string-based one-of-a-set flags, then the
@@ -49,11 +43,20 @@ But if you instead want to handle one-of-a-set flags as properly typed
 enumerations instead of strings, or if you need (multiple-of-a-set) slice
 support, then please read on.
 
+## Installation
+
+To add `enumflag` as a dependency, in your Go module issue:
+
+```bash
+go get github.com/thediveo/enumflag/v2
+```
+
 ## How To Use
 
 - [start with your own enum types](#start-with-your-own-enum-types),
 - [use existing enum types and non-zero defaults](#use-existing-enum-types),
 - [CLI flag with default](#cli-flag-with-default),
+- [CLI flag without a default value](#cli-flag-without-default),
 - [slice of enums](#slice-of-enums).
 
 ### Start With Your Own Enum Types
@@ -184,8 +187,8 @@ func main() {
 ### CLI Flag With Default
 
 Sometimes you might want a CLI enum flag to have a default value when the user
-specifies the CLI flag, but not its value. A good example is the `--color`
-flag of the `ls` command:
+just specifies the CLI flag **without its value**. A good example is the
+`--color` flag of the `ls` command:
 
 - if just specified as `--color` without a value, it
 will default to the value of `auto`;
@@ -211,6 +214,50 @@ rootCmd.PersistentFlags().VarP(
     "colorize the output; can be 'always' (default if omitted), 'auto',\n"+
         "or 'never'")
 rootCmd.PersistentFlags().Lookup("color").NoOptDefVal = "always"
+```
+
+### CLI Flag Without Default
+
+In other situations you might _not_ want to have a default value set, because a
+particular CLI flag is mandatory (using cobra's
+[MarkFlagRequired](https://pkg.go.dev/github.com/spf13/cobra#MarkFlagRequired)).
+Here, cobra's help should not show a (useless) default enum flag setting but
+only the availabe enum values.
+
+**Don't assign the zero value** of your enum type to any value, except the
+"non-existing" default.
+
+```go
+// ② Define the enumeration values for FooMode; do not assign the zero value to
+// any enum value except for the "no default" default.
+const (
+    NoDefault FooMode = iota // optional; must be the zero value.
+    Foo                      // make sure to not use the zero value.
+    Bar
+)
+```
+
+Also, **don't map the zero value** of your enum type.
+
+```go
+// ③ Map enumeration values to their textual representations (value
+// identifiers).
+var FooModeIds = map[FooMode][]string{
+    // ...do NOT include/map the "no default" zero value!
+    Foo: {"foo"},
+    Bar: {"bar"},
+}
+```
+
+Finally, simply use `enumflag.NewWithoutDefault` instead of `enumflag.New` –
+that's all.
+
+```go
+// ⑤ Define the CLI flag parameters for your wrapped enum flag.
+rootCmd.PersistentFlags().VarP(
+    enumflag.NewWithoutDefault(&foomode, "mode", FooModeIds, enumflag.EnumCaseInsensitive),
+    "mode", "m",
+    "foos the output; can be 'foo' or 'bar'")
 ```
 
 ### Slice of Enums

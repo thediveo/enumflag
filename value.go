@@ -29,7 +29,15 @@ const unknown = "<unknown>"
 // enumScalar represents a mutable, single enumeration value that can be
 // retrieved, set, and stringified.
 type enumScalar[E constraints.Integer] struct {
-	v *E
+	v         *E
+	nodefault bool // opts in to accepting a zero enum value as the "none"
+}
+
+// enumSlice represents a slice of enumeration values that can be retrieved,
+// set, and stringified.
+type enumSlice[E constraints.Integer] struct {
+	v     *[]E
+	merge bool // replace the complete slice or merge values?
 }
 
 // Get returns the scalar enum value.
@@ -50,18 +58,21 @@ func (s *enumScalar[E]) Set(val string, names enumMapper[E]) error {
 
 // String returns the textual representation of the scalar enum value, using the
 // specified text-to-value mapping.
+//
+// String will return "<unknown>" for undefined/unmapped enum values. If the
+// enum flag has been created using [NewWithoutDefault], then an empty string is
+// returned instead: in this case [spf13/cobra] will not show any default for
+// the corresponding CLI flag.
+//
+// [spf13/cobra]: https://github.com/spf13/cobra
 func (s *enumScalar[E]) String(names enumMapper[E]) string {
 	if ids := names.Lookup(*s.v); len(ids) > 0 {
 		return ids[0]
 	}
+	if *s.v == 0 && s.nodefault {
+		return ""
+	}
 	return unknown
-}
-
-// enumSlice represents a slice of enumeration values that can be retrieved,
-// set, and stringified.
-type enumSlice[E constraints.Integer] struct {
-	v     *[]E
-	merge bool // replace the complete slice or merge values?
 }
 
 // Get returns the slice enum values.
