@@ -1,5 +1,5 @@
 # CLI Enumeration Flags
-[![GoDoc](https://godoc.org/github.com/thediveo/enumflag?status.svg)](http://godoc.org/github.com/thediveo/enumflag)
+[![Go Reference](https://pkg.go.dev/badge/github.com/thediveo/enumflag.svg)](https://pkg.go.dev/github.com/thediveo/enumflag/v2)
 [![GitHub](https://img.shields.io/github/license/thediveo/enumflag)](https://img.shields.io/github/license/thediveo/enumflag)
 ![build and test](https://github.com/thediveo/enumflag/workflows/build%20and%20test/badge.svg?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/thediveo/enumflag)](https://goreportcard.com/report/github.com/thediveo/enumflag)
