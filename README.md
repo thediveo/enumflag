@@ -2,10 +2,10 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/thediveo/enumflag.svg)](https://pkg.go.dev/github.com/thediveo/enumflag/v2)
 [![GitHub](https://img.shields.io/github/license/thediveo/enumflag)](https://img.shields.io/github/license/thediveo/enumflag)
 ![build and test](https://github.com/thediveo/enumflag/workflows/build%20and%20test/badge.svg?branch=master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/thediveo/enumflag)](https://goreportcard.com/report/github.com/thediveo/enumflag)
+[![Go Report Card](https://goreportcard.com/badge/github.com/thediveo/enumflag/v2)](https://goreportcard.com/report/github.com/thediveo/enumflag/v2)
 ![Coverage](https://img.shields.io/badge/Coverage-100.0%25-brightgreen)
 
-`enumflag` is a Golang package which supplements the Golang CLI flag packages
+`enumflag/v2` is a Golang package which supplements the Golang CLI flag packages
 [spf13/cobra](https://github.com/spf13/cobra) and
 [spf13/pflag](https://github.com/spf13/pflag) with enumeration flags, including
 support for enumeration slices. Thanks to Go generics, `enumflag/v2` now
@@ -45,7 +45,7 @@ support, then please read on.
 
 ## Installation
 
-To add `enumflag` as a dependency, in your Go module issue:
+To add `enumflag/v2` as a dependency, in your Go module issue:
 
 ```bash
 go get github.com/thediveo/enumflag/v2
@@ -357,7 +357,11 @@ The included `enumflag.code-workspace` defines the following tasks:
   so and then runs it on the code base.
 - `make test`: runs all tests.
 
+## Contributing
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Copyright and License
 
-`lxkns` is Copyright 2020, 2022 Harald Albrecht, and licensed under the Apache
+`lxkns` is Copyright 2020, 2023 Harald Albrecht, and licensed under the Apache
 License, Version 2.0.
