@@ -22,14 +22,14 @@ import (
 
 // Flag represents a CLI (enumeration) flag which can take on only a single
 // enumeration value out of a fixed set of enumeration values. Applications
-// using the enumflag package might want to ``derive'' their enumeration flags
+// using the enumflag package might want to “derive” their enumeration flags
 // from Flag for documentation purposes; for instance:
 //
-//   type MyFoo enumflag.Flag
+//	type MyFoo enumflag.Flag
 //
 // However, applications don't need to base their own enum types on Flag. The
 // only requirement for user-defined enumeration flags is that they must be
-// (``somewhat'') compatible with the Flag type, or more precise: user-defined
+// (“somewhat”) compatible with the Flag type, or more precise: user-defined
 // enumerations must satisfy [constraints.Integer].
 type Flag uint
 

@@ -33,9 +33,7 @@ var _ = Describe("flag", func() {
 		It("rejects setting invalid values", func() {
 			var foomode FooModeTest
 			val := New(&foomode, "mode", FooModeIdentifiersTest, EnumCaseSensitive)
-			err := val.Set("FOOBAR")
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("must be 'bar'/'Bar', 'baz', 'foo'"))
+			Expect(val.Set("FOOBAR")).To(MatchError("must be 'bar'/'Bar', 'baz', 'foo'"))
 		})
 
 		It("sets the enumeration value from text", func() {
