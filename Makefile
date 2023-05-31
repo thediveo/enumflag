@@ -24,4 +24,4 @@ vuln: ## runs govulncheck
 	@scripts/vuln.sh
 
 chores: ## updates Go binaries and NPM helper packages if necessary
-        @scripts/chores.sh
+	@scripts/chores.sh
