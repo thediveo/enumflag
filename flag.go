@@ -82,8 +82,8 @@ func New[E constraints.Integer](flag *E, typename string, mapping EnumIdentifier
 // NewWithoutDefault wraps a given enum variable (satisfying
 // [constraints.Integer]) so that it can be used as a flag Value with
 // [github.com/spf13/pflag.Var] and [github.com/spf13/pflag.VarP]. Please note
-// that zero enum value must not be mapped and thus not be assigned to any enum
-// value textual representation.
+// that the zero enum value must not be mapped and thus not be assigned to any
+// enum value textual representation.
 //
 // [spf13/cobra] won't show any default value in its help for CLI enum flags
 // created with NewWithoutDefault.
@@ -145,3 +145,9 @@ func (e *EnumFlagValue[E]) Type() string { return e.enumtype }
 // Get returns the current enum value for convenience. Please note that the enum
 // value is either scalar or slice, depending on how the enum flag was created.
 func (e *EnumFlagValue[E]) Get() any { return e.value.Get() }
+
+// Completor returns a cobra dynamic flag completion function that can be
+// registered with the flag.
+func (e *EnumFlagValue[E]) Completor() Completor {
+	return newCompletor(e.names.Mapping(), nil)
+}
