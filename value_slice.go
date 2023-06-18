@@ -21,58 +21,11 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-// unknown is the textual representation of an unknown enum value, that is, when
-// the enum value to name mapping doesn't have any idea about a particular enum
-// value.
-const unknown = "<unknown>"
-
-// enumScalar represents a mutable, single enumeration value that can be
-// retrieved, set, and stringified.
-type enumScalar[E constraints.Integer] struct {
-	v         *E
-	nodefault bool // opts in to accepting a zero enum value as the "none"
-}
-
 // enumSlice represents a slice of enumeration values that can be retrieved,
 // set, and stringified.
 type enumSlice[E constraints.Integer] struct {
 	v     *[]E
 	merge bool // replace the complete slice or merge values?
-}
-
-// Get returns the scalar enum value.
-func (s *enumScalar[E]) Get() any { return *s.v }
-
-// Set the value to the new scalar enum value corresponding to the passed
-// textual representation, using the additionally specified text-to-value
-// mapping. If the specified textual representation doesn't match any of the
-// defined ones, an error is returned instead and the value isn't changed.
-func (s *enumScalar[E]) Set(val string, names enumMapper[E]) error {
-	enumcode, err := names.ValueOf(val)
-	if err != nil {
-		return err
-	}
-	*s.v = enumcode
-	return nil
-}
-
-// String returns the textual representation of the scalar enum value, using the
-// specified text-to-value mapping.
-//
-// String will return "<unknown>" for undefined/unmapped enum values. If the
-// enum flag has been created using [NewWithoutDefault], then an empty string is
-// returned instead: in this case [spf13/cobra] will not show any default for
-// the corresponding CLI flag.
-//
-// [spf13/cobra]: https://github.com/spf13/cobra
-func (s *enumScalar[E]) String(names enumMapper[E]) string {
-	if ids := names.Lookup(*s.v); len(ids) > 0 {
-		return ids[0]
-	}
-	if *s.v == 0 && s.nodefault {
-		return ""
-	}
-	return unknown
 }
 
 // Get returns the slice enum values.
@@ -125,4 +78,9 @@ func (s *enumSlice[E]) String(names enumMapper[E]) string {
 		n = append(n, unknown)
 	}
 	return "[" + strings.Join(n, ",") + "]"
+}
+
+// NewCompletor returns a cobra Completor that completes enum flag values.
+func (s *enumSlice[E]) NewCompletor(enums EnumIdentifiers[E], help Help[E]) Completor {
+	return nil // FIXME:
 }

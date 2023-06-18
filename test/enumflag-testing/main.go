@@ -54,7 +54,11 @@ func newRootCmd() *cobra.Command {
 
 	ef := enumflag.New(&fooMode, "FooMode", FooModeNames, enumflag.EnumCaseInsensitive)
 	testCmd.PersistentFlags().Var(ef, "mode", "sets foo mode")
-	ef.RegisterCompletion(testCmd, "mode", nil)
+	ef.RegisterCompletion(testCmd, "mode", enumflag.Help[FooMode]{
+		Foo: "foos the output",
+		Bar: "bars the output",
+		Baz: "bazs the output",
+	})
 
 	rootCmd.AddCommand(testCmd)
 	return rootCmd

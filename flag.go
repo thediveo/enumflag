@@ -59,14 +59,15 @@ type EnumFlagValue[E constraints.Integer] struct {
 // enumValue supports getting, setting, and stringifying an scalar or slice enum
 // enumValue.
 //
-// Do I smell preemptive interfacing here...? Now watch the magic of cleanest
-// code: by just moving the interface type from the source file with the struct
+// Do I smell preemptive interfacing here...? Now watch the magic of “cleanest
+// code”: by just moving the interface type from the source file with the struct
 // types to the source file with the consumer we achieve immediate Go
-// perfectness!
+// perfectness! Strike!
 type enumValue[E constraints.Integer] interface {
 	Get() any
 	Set(val string, names enumMapper[E]) error
 	String(names enumMapper[E]) string
+	NewCompletor(enums EnumIdentifiers[E], help Help[E]) Completor
 }
 
 // New wraps a given enum variable (satisfying [constraints.Integer]) so that it
@@ -149,7 +150,7 @@ func (e *EnumFlagValue[E]) Get() any { return e.value.Get() }
 
 // RegisterCompletion registers completions for the specified (flag) name, with
 // optional help texts.
-func (e *EnumFlagValue[E]) RegisterCompletion(cmd *cobra.Command, name string, help EnumHelp[E]) error {
+func (e *EnumFlagValue[E]) RegisterCompletion(cmd *cobra.Command, name string, help Help[E]) error {
 	return cmd.RegisterFlagCompletionFunc(
-		name, newCompletor(e.names.Mapping(), help))
+		name, e.value.NewCompletor(e.names.Mapping(), help))
 }

@@ -140,16 +140,16 @@ var _ = FDescribe("flag enum completions end-to-end", Ordered, func() {
 	It("lists enum flag's values", func() {
 		bashin.WriteString(dummyCommandName + " test --mode \t\t")
 		Eventually(bash.Err).Should(gbytes.Say(
-			`bar\s+baz\s+foo`))
+			`bar\s+\(bars the output\)\s+baz\s+\(bazs the output\)\s+foo\s+\(foos the output\)`))
 		bashin.WriteString("\b=\t\t")
 		Eventually(bash.Err).Should(gbytes.Say(
-			`bar\s+baz\s+foo`))
+			`bar\s+\(bars the output\)\s+baz\s+\(bazs the output\)\s+foo\s+\(foos the output\)`))
 	})
 
 	It("completes enum flag's values", func() {
 		bashin.WriteString(dummyCommandName + " test --mode ba\t\t")
 		Eventually(bash.Err).Should(gbytes.Say(
-			`bar\s+baz`))
+			`bar\s+\(bars the output\)\s+baz\s+\(bazs the output\)`))
 		bashin.WriteString("\b\bf\t")
 		Eventually(bash.Err).Should(gbytes.Say(
 			`oo `))
