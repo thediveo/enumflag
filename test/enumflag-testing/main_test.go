@@ -16,6 +16,7 @@ package main
 
 import (
 	"bytes"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -50,6 +51,18 @@ var _ = Describe("enumflag-testing canary", func() {
 		rootCmd.SetArgs([]string{"completion", "bash"})
 		Expect(rootCmd.Execute()).To(Succeed())
 		Expect(out.String()).To(MatchRegexp(`^# bash completion V2 for`))
+	})
+
+	It("reaches 100% :p", func() {
+		exitCode := -1
+		defer func(old func(int), oldargs []string) {
+			osExit = old
+			os.Args = oldargs
+		}(osExit, os.Args)
+		osExit = func(code int) { exitCode = code }
+		os.Args = []string{os.Args[0], "froobz"}
+		main()
+		Expect(exitCode).To(Equal(1))
 	})
 
 })

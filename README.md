@@ -3,7 +3,7 @@
 [![GitHub](https://img.shields.io/github/license/thediveo/enumflag)](https://img.shields.io/github/license/thediveo/enumflag)
 ![build and test](https://github.com/thediveo/enumflag/workflows/build%20and%20test/badge.svg?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/thediveo/enumflag/v2)](https://goreportcard.com/report/github.com/thediveo/enumflag/v2)
-![Coverage](https://img.shields.io/badge/Coverage-95.5%25-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-97.3%25-brightgreen)
 
 `enumflag/v2` is a Golang package which supplements the Golang CLI flag packages
 [spf13/cobra](https://github.com/spf13/cobra) and

@@ -69,6 +69,8 @@ func main() {
 	// behind the scenes, unless we specify one explicitly. It also adds a
 	// "complete" sub command if we're adding at least one sub command.
 	if err := newRootCmd().Execute(); err != nil {
-		os.Exit(1)
+		osExit(1)
 	}
 }
+
+var osExit = os.Exit
