@@ -38,6 +38,12 @@ var FooModeIdentifiersTest = map[FooModeTest][]string{
 	fmBaz: {"baz"},
 }
 
+var FooModeHelp = map[FooModeTest]string{
+	fmFoo: "foo it",
+	fmBar: "bar IT!",
+	fmBaz: "baz nit!!",
+}
+
 func TestEnumFlag(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "enumflag")

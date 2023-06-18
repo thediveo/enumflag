@@ -54,6 +54,27 @@ var _ = Describe("enum values", func() {
 			Expect(es.Set("Barumph", m)).NotTo(Succeed())
 		})
 
+		DescribeTable("completion",
+			func(toc string, expected []string) {
+				c := (&enumScalar[FooModeTest]{}).NewCompletor(FooModeIdentifiersTest, nil)
+				actual, _ := c(nil, nil, toc)
+				Expect(actual).To(ConsistOf(expected))
+			},
+			Entry("returns all values", "", []string{"foo", "bar", "Bar", "baz"}),
+			Entry("always returns all values without filtering", "b", []string{"foo", "bar", "Bar", "baz"}),
+		)
+
+		It("completes with help", func() {
+			c := (&enumScalar[FooModeTest]{}).NewCompletor(FooModeIdentifiersTest, FooModeHelp)
+			actual, _ := c(nil, nil, "")
+			Expect(actual).To(ConsistOf([]string{
+				"foo\tfoo it",
+				"bar\tbar IT!",
+				"Bar\tbar IT!",
+				"baz\tbaz nit!!",
+			}))
+		})
+
 	})
 
 	Context("slices", func() {
@@ -90,9 +111,27 @@ var _ = Describe("enum values", func() {
 			func(value string) {
 				Expect(es.Set(value, m)).NotTo(Succeed())
 			},
-			Entry("bajazzo", "bajazzo"),
-			Entry("foo,bajazzo", "foo,bajazzo"),
-			Entry("\"\"", ""),
+			Entry(nil, "bajazzo"),
+			Entry(nil, "foo,bajazzo"),
+			Entry(`""`, ""),
+		)
+
+		DescribeTable("completion",
+			func(toc string, expected []string) {
+				c := (&enumSlice[FooModeTest]{}).NewCompletor(FooModeIdentifiersTest, nil)
+				actual, _ := c(nil, nil, toc)
+				Expect(actual).To(ConsistOf(expected))
+			},
+			Entry("returns all values", "", []string{"foo", "bar", "Bar", "baz"}),
+			Entry("always returns all values without filtering", "b",
+				[]string{"foo", "bar", "Bar", "baz"}),
+			Entry("returns all remaining values", "f",
+				[]string{"foo", "bar", "Bar", "baz"}),
+			Entry(nil, "foo,", []string{"foo,bar", "foo,Bar", "foo,baz"}),
+			Entry(nil, "foo,bar,", []string{"foo,bar,Bar", "foo,bar,baz"}),
+			Entry(nil, "bar,baz,f", []string{"bar,baz,foo", "bar,baz,Bar"}),
+			Entry("ignores non-existing elements", "foo,koo,",
+				[]string{"foo,koo,bar", "foo,koo,Bar", "foo,koo,baz"}),
 		)
 
 	})

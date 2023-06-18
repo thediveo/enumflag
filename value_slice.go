@@ -17,6 +17,7 @@ package enumflag
 import (
 	"strings"
 
+	"github.com/spf13/cobra"
 	"golang.org/x/exp/constraints"
 	"golang.org/x/exp/slices"
 )
@@ -82,5 +83,33 @@ func (s *enumSlice[E]) String(names enumMapper[E]) string {
 
 // NewCompletor returns a cobra Completor that completes enum flag values.
 func (s *enumSlice[E]) NewCompletor(enums EnumIdentifiers[E], help Help[E]) Completor {
-	return nil // FIXME:
+	completions := []string{}
+	for enumval, enumnames := range enums {
+		helptext := ""
+		if text, ok := help[enumval]; ok {
+			helptext = "\t" + text
+		}
+		// complete not only the canonical enum value name, but also all other
+		// (alias) names.
+		for _, name := range enumnames {
+			completions = append(completions, name+helptext)
+		}
+	}
+	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		prefix := ""
+		completes := []string{}
+		if lastComma := strings.LastIndex(toComplete, ","); lastComma >= 0 {
+			prefix = toComplete[:lastComma+1] // ...Prof J. won't ever like this variable name
+			completes = strings.Split(prefix, ",")
+			completes = completes[:len(completes)-1] // remove last empty element
+		}
+		filteredCompletions := make([]string, 0, len(completions))
+		for _, completion := range completions {
+			if slices.Contains(completes, strings.Split(completion, "\t")[0]) {
+				continue
+			}
+			filteredCompletions = append(filteredCompletions, prefix+completion)
+		}
+		return filteredCompletions, cobra.ShellCompDirectiveDefault
+	}
 }

@@ -46,7 +46,7 @@ func (w *writer) WriteString(s string) {
 	Expect(w.WriteCloser.Write([]byte(s))).Error().NotTo(HaveOccurred())
 }
 
-var _ = FDescribe("flag enum completions end-to-end", Ordered, func() {
+var _ = Describe("flag enum completions end-to-end", Ordered, func() {
 
 	var enumflagTestingPath string
 	var completionsUserDir string
@@ -67,7 +67,7 @@ var _ = FDescribe("flag enum completions end-to-end", Ordered, func() {
 		// https://github.com/scop/bash-completion/blob/master/README.md#faq
 		// says that the completions must be inside a "completions" sub
 		// directory of $BASH_COMPLETION_USER_DIR, and not inside
-		// $BASH_COMPLETION_USER_DIR itself ... yeah, ¯\_(ツ)_/¯
+		// $BASH_COMPLETION_USER_DIR itself ... yeah, 🤷
 		Expect(os.Mkdir(filepath.Join(completionsUserDir, "completions"), 0770)).To(Succeed())
 
 		By("telling the CLI binary to give us a completion script that we then store away")
@@ -88,7 +88,8 @@ var _ = FDescribe("flag enum completions end-to-end", Ordered, func() {
 		By("creating a new test bash session")
 		bashCmd := exec.Command("/bin/bash", "--rcfile", "/etc/profile", "-i")
 		// Run the silly interactive subshell in its own session so we don't get
-		// funny surprises such as the subshell getting suspended...
+		// funny surprises such as the subshell getting suspended by its parent
+		// shell...
 		bashCmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 		bashCmd.Env = append(slices.Clone(os.Environ()),
 			bashComplDirEnv+"="+completionsUserDir,

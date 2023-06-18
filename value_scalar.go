@@ -67,6 +67,9 @@ func (s *enumScalar[E]) String(names enumMapper[E]) string {
 }
 
 // NewCompletor returns a cobra Completor that completes enum flag values.
+// Please note that shell completion hasn't the notion of case sensitivity or
+// insensitivity, so we cannot take this into account but instead return all
+// available enum value names in their original form.
 func (s *enumScalar[E]) NewCompletor(enums EnumIdentifiers[E], help Help[E]) Completor {
 	completions := []string{}
 	for enumval, enumnames := range enums {
