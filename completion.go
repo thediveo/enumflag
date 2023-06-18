@@ -27,8 +27,8 @@ import (
 // any help texts in order to register enum flag completion.
 type EnumHelp[E constraints.Integer] map[E]string
 
-// Completor tells cobra how to complete a flag. See also [dynamic flag
-// completion].
+// Completor tells cobra how to complete a flag. See also cobra's [dynamic flag
+// completion] documentation.
 //
 // [dynamic flag completion]: https://github.com/spf13/cobra/blob/main/shell_completions.md#specify-dynamic-flag-completion
 type Completor func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective)

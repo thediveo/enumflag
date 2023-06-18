@@ -18,19 +18,44 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/thediveo/enumflag/v2"
 )
 
 const Name = "enumflag-testing"
+
+type FooMode enumflag.Flag
+
+var fooMode FooMode
+
+const (
+	Foo FooMode = iota
+	Bar
+	Baz
+)
+
+var FooModeNames = map[FooMode][]string{
+	Foo: {"foo"},
+	Bar: {"bar"},
+	Baz: {"baz"},
+}
 
 func newRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use: Name,
 		Run: func(*cobra.Command, []string) {},
 	}
+
 	testCmd := &cobra.Command{
-		Use: "test",
-		Run: func(*cobra.Command, []string) {},
+		Use:  "test the canary",
+		Long: "test the canary",
+		Args: cobra.NoArgs,
+		Run:  func(*cobra.Command, []string) {},
 	}
+
+	ef := enumflag.New(&fooMode, "FooMode", FooModeNames, enumflag.EnumCaseInsensitive)
+	testCmd.PersistentFlags().Var(ef, "mode", "sets foo mode")
+	ef.RegisterCompletion(testCmd, "mode", nil)
+
 	rootCmd.AddCommand(testCmd)
 	return rootCmd
 }

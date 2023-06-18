@@ -17,6 +17,7 @@ package enumflag
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
 	"golang.org/x/exp/constraints"
 )
 
@@ -146,8 +147,9 @@ func (e *EnumFlagValue[E]) Type() string { return e.enumtype }
 // value is either scalar or slice, depending on how the enum flag was created.
 func (e *EnumFlagValue[E]) Get() any { return e.value.Get() }
 
-// Completor returns a cobra dynamic flag completion function that can be
-// registered with the flag.
-func (e *EnumFlagValue[E]) Completor() Completor {
-	return newCompletor(e.names.Mapping(), nil)
+// RegisterCompletion registers completions for the specified (flag) name, with
+// optional help texts.
+func (e *EnumFlagValue[E]) RegisterCompletion(cmd *cobra.Command, name string, help EnumHelp[E]) error {
+	return cmd.RegisterFlagCompletionFunc(
+		name, newCompletor(e.names.Mapping(), help))
 }
