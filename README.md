@@ -3,7 +3,7 @@
 [![GitHub](https://img.shields.io/github/license/thediveo/enumflag)](https://img.shields.io/github/license/thediveo/enumflag)
 ![build and test](https://github.com/thediveo/enumflag/workflows/build%20and%20test/badge.svg?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/thediveo/enumflag/v2)](https://goreportcard.com/report/github.com/thediveo/enumflag/v2)
-![Coverage](https://img.shields.io/badge/Coverage-100.0%25-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-95.5%25-brightgreen)
 
 `enumflag/v2` is a Golang package which supplements the Golang CLI flag packages
 [spf13/cobra](https://github.com/spf13/cobra) and
@@ -122,6 +122,35 @@ The boilerplate pattern is always the same:
    - If you want to use a non-zero default enum value, just go ahead and set
      it: `var foomode = Bar`. It will be used correctly.
 5. Wire up your flag variable to its flag long and short names, et cetera.
+
+### Shell Completion
+
+Dynamic flag completion can be enabled by calling the `RegisterCompletion(...)`
+receiver of an enum flag (more precise: flag value) created using
+`enumflag.New(...)`. `enumflag` supports dynamic flag completion for both scalar
+and slice enum flags. Unfortunately, due to the cobra API design it isn't
+possible for `enumflag` to offer a fluent API. Instead, creation, adding, and
+registering have to be carried out as separate instructions.
+
+```go
+    // ⑤ Define the CLI flag parameters for your wrapped enum flag.
+    ef := enumflag.New(&foomode, "mode", FooModeIds, enumflag.EnumCaseInsensitive)
+    rootCmd.PersistentFlags().VarP(
+        ef,
+        "mode", "m",
+        "foos the output; can be 'foo' or 'bar'")
+    // ⑥ register completion
+    ef.RegisterCompletion(rootCmd, "mode", enumflag.Help[FooMode]{
+		Foo: "foos the output",
+		Bar: "bars the output",
+	})
+```
+
+Please note for shell completion to work, your root command needs to have at
+least one (explicit) sub command. Otherwise, `cobra` won't automatically add an
+additional `completion` sub command. For more details, please refer to cobra's
+documentation on [Generating shell
+completions](https://github.com/spf13/cobra/blob/main/shell_completions.md).
 
 ### Use Existing Enum Types
 
