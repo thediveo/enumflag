@@ -110,6 +110,6 @@ func (s *enumSlice[E]) NewCompletor(enums EnumIdentifiers[E], help Help[E]) Comp
 			}
 			filteredCompletions = append(filteredCompletions, prefix+completion)
 		}
-		return filteredCompletions, cobra.ShellCompDirectiveDefault
+		return filteredCompletions, cobra.ShellCompDirectiveNoFileComp | cobra.ShellCompDirectiveNoSpace
 	}
 }

@@ -84,6 +84,6 @@ func (s *enumScalar[E]) NewCompletor(enums EnumIdentifiers[E], help Help[E]) Com
 		}
 	}
 	return func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
-		return completions, cobra.ShellCompDirectiveDefault
+		return completions, cobra.ShellCompDirectiveNoFileComp
 	}
 }

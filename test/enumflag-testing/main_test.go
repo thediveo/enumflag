@@ -16,6 +16,7 @@ package main
 
 import (
 	"bytes"
+	"io"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -30,9 +31,8 @@ var _ = Describe("enumflag-testing canary", func() {
 	var out *bytes.Buffer
 
 	BeforeEach(func() {
-		rootCmd = newRootCmd()
 		out = &bytes.Buffer{}
-		rootCmd.SetOutput(out)
+		rootCmd = newRootCmd(out)
 	})
 
 	It("has a hidden __complete command", func() {
@@ -55,12 +55,14 @@ var _ = Describe("enumflag-testing canary", func() {
 
 	It("reaches 100% :p", func() {
 		exitCode := -1
-		defer func(old func(int), oldargs []string) {
+		defer func(old func(int), oldargs []string, out io.Writer) {
 			osExit = old
 			os.Args = oldargs
-		}(osExit, os.Args)
+			stdout = out
+		}(osExit, os.Args, os.Stdout)
 		osExit = func(code int) { exitCode = code }
 		os.Args = []string{os.Args[0], "froobz"}
+		stdout = &bytes.Buffer{}
 		main()
 		Expect(exitCode).To(Equal(1))
 	})
