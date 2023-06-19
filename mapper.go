@@ -83,3 +83,8 @@ func (m enumMapper[E]) ValueOf(name string) (E, error) {
 	sort.Strings(allids)
 	return 0, fmt.Errorf("must be %s", strings.Join(allids, ", "))
 }
+
+// Mapping returns the mapping of enum values to their names.
+func (m enumMapper[E]) Mapping() EnumIdentifiers[E] {
+	return m.m
+}

@@ -17,6 +17,7 @@ package enumflag
 import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/spf13/cobra"
 )
 
 var _ = Describe("flag", func() {
@@ -79,6 +80,18 @@ var _ = Describe("flag", func() {
 			}).To(PanicWith(MatchRegexp("NewSlice requires mapping not to be nil")))
 		})
 
+	})
+
+	It("returns completors", func() {
+		cmd := &cobra.Command{}
+		foomodes := []FooModeTest{fmBar, fmFoo}
+		val := NewSlice(&foomodes, "modes", FooModeIdentifiersTest, EnumCaseInsensitive)
+		cmd.PersistentFlags().Var(val, "mode", "blahblah")
+		Expect(val.RegisterCompletion(cmd, "mode", Help[FooModeTest]{
+			fmFoo: "gives a foo",
+			fmBar: "gives a bar",
+			fmBaz: "gives a baz",
+		})).To(Succeed())
 	})
 
 })

@@ -17,6 +17,7 @@ package enumflag
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
 	"golang.org/x/exp/constraints"
 )
 
@@ -58,14 +59,15 @@ type EnumFlagValue[E constraints.Integer] struct {
 // enumValue supports getting, setting, and stringifying an scalar or slice enum
 // enumValue.
 //
-// Do I smell preemptive interfacing here...? Now watch the magic of cleanest
-// code: by just moving the interface type from the source file with the struct
+// Do I smell preemptive interfacing here...? Now watch the magic of “cleanest
+// code”: by just moving the interface type from the source file with the struct
 // types to the source file with the consumer we achieve immediate Go
-// perfectness!
+// perfectness! Strike!
 type enumValue[E constraints.Integer] interface {
 	Get() any
 	Set(val string, names enumMapper[E]) error
 	String(names enumMapper[E]) string
+	NewCompletor(enums EnumIdentifiers[E], help Help[E]) Completor
 }
 
 // New wraps a given enum variable (satisfying [constraints.Integer]) so that it
@@ -82,8 +84,8 @@ func New[E constraints.Integer](flag *E, typename string, mapping EnumIdentifier
 // NewWithoutDefault wraps a given enum variable (satisfying
 // [constraints.Integer]) so that it can be used as a flag Value with
 // [github.com/spf13/pflag.Var] and [github.com/spf13/pflag.VarP]. Please note
-// that zero enum value must not be mapped and thus not be assigned to any enum
-// value textual representation.
+// that the zero enum value must not be mapped and thus not be assigned to any
+// enum value textual representation.
 //
 // [spf13/cobra] won't show any default value in its help for CLI enum flags
 // created with NewWithoutDefault.
@@ -145,3 +147,10 @@ func (e *EnumFlagValue[E]) Type() string { return e.enumtype }
 // Get returns the current enum value for convenience. Please note that the enum
 // value is either scalar or slice, depending on how the enum flag was created.
 func (e *EnumFlagValue[E]) Get() any { return e.value.Get() }
+
+// RegisterCompletion registers completions for the specified (flag) name, with
+// optional help texts.
+func (e *EnumFlagValue[E]) RegisterCompletion(cmd *cobra.Command, name string, help Help[E]) error {
+	return cmd.RegisterFlagCompletionFunc(
+		name, e.value.NewCompletor(e.names.Mapping(), help))
+}

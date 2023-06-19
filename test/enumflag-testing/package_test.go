@@ -1,4 +1,4 @@
-// Copyright 2020 Harald Albrecht.
+// Copyright 2023 Harald Albrecht.
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -12,7 +12,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-package enumflag
+package main
 
 import (
 	"testing"
@@ -21,30 +21,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// Our new enumeration type.
-type FooModeTest Flag
-
-// Enumeration constants/values.
-const (
-	fmFoo FooModeTest = iota + 1
-	fmBar
-	fmBaz
-)
-
-// Enumeration identifiers mapped to their corresponding constants.
-var FooModeIdentifiersTest = map[FooModeTest][]string{
-	fmFoo: {"foo"},
-	fmBar: {"bar", "Bar"},
-	fmBaz: {"baz"},
-}
-
-var FooModeHelp = map[FooModeTest]string{
-	fmFoo: "foo it",
-	fmBar: "bar IT!",
-	fmBaz: "baz nit!!",
-}
-
 func TestEnumFlag(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "enumflag")
+	RunSpecs(t, "test/enumflag-testing")
 }
