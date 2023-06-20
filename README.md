@@ -54,10 +54,11 @@ go get github.com/thediveo/enumflag/v2
 ## How To Use
 
 - [start with your own enum types](#start-with-your-own-enum-types),
-- [use existing enum types and non-zero defaults](#use-existing-enum-types),
-- [CLI flag with default](#cli-flag-with-default),
-- [CLI flag without a default value](#cli-flag-without-default),
-- [slice of enums](#slice-of-enums).
+- optional: [shell completion](#shell-completion),
+- optional: [use existing enum types and non-zero defaults](#use-existing-enum-types),
+- optional: [CLI flag with default](#cli-flag-with-default),
+- optional: [CLI flag without a default value](#cli-flag-without-default),
+- optional: [slice of enums](#slice-of-enums).
 
 ### Start With Your Own Enum Types
 
