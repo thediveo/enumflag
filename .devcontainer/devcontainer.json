@@ -1,0 +1,36 @@
+{
+    "name": "enumflag",
+    "portsAttributes": {
+        "6060": {
+            "label": "enumflag package documentation",
+            "onAutoForward": "notify",
+            "protocol": "http"
+        }
+    },
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+    "features": {
+        "ghcr.io/thediveo/devcontainer-features/local-pkgsite:0": {},
+        "ghcr.io/thediveo/devcontainer-features/goreportcard:0": {},
+        "ghcr.io/thediveo/devcontainer-features/go-mod-upgrade:0": {},
+        "ghcr.io/thediveo/devcontainer-features/gocover:0": {
+            "num-programs": "1",
+            "race": true,
+            "verbose": true,
+            "html": true
+        }
+    },
+    "remoteEnv": {
+        "GOPATH": "/home/vscode/go",
+        "PATH": "/home/vscode/go/bin:/go/bin:/usr/local/go/bin:${localEnv:PATH}"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "stkb.rewrap",
+                "brunnerh.insert-unicode",
+                "mhutchie.git-graph",
+                "ms-vscode.makefile-tools"
+            ]
+        }
+    }
+}
