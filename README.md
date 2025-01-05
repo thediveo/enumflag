@@ -348,8 +348,10 @@ func Example_slice() {
 
 ## DevContainer
 
-> [!CAUTION] Do **not** use VSCode's "~~Dev Containers: Clone Repository in
-> Container Volume~~" command, as it is utterly broken by design, ignoring
+> [!CAUTION]
+>
+> Do **not** use VSCode's "~~Dev Containers: Clone Repository in Container
+> Volume~~" command, as it is utterly broken by design, ignoring
 > `.devcontainer/devcontainer.json`.
 
 1. `git clone https://github.com/thediveo/enumflag`
