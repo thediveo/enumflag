@@ -27,6 +27,9 @@ Application programmers then simply deal with enumeration values in form of
 uints (or ints, _erm_, anything that satisfies `constraints.Integer`s),
 liberated from parsing strings and validating enumeration flags.
 
+For devcontainer instructions, please see the [section "DevContainer"
+below](#devcontainer).
+
 ## Alternatives
 
 In case you are just interested in string-based one-of-a-set flags, then the
@@ -34,7 +37,6 @@ following packages offer you a minimalist approach:
 
 - [hashicorp/packer/helper/enumflag](https://godoc.org/github.com/hashicorp/packer/helper/enumflag)
   really is a reduced-to-the-max version without any whistles and bells.
-
 - [creachadair/goflags/enumflag](https://godoc.org/github.com/creachadair/goflags/enumflag)
   has a similar, but slightly more elaborate API with additional "indices" for
   enumeration values.
@@ -346,16 +348,13 @@ func Example_slice() {
 
 ## DevContainer
 
-First method:
+> [!CAUTION] Do **not** use VSCode's "~~Dev Containers: Clone Repository in
+> Container Volume~~" command, as it is utterly broken by design, ignoring
+> `.devcontainer/devcontainer.json`.
 
-1. in VSCode: Ctrl+Shift+P, "Dev Containers: Open Workspace in Container..."
-2. select `enumflag.code-workspace` and off you go...
-
-Second method:
-
-1. In VSCode: Ctrl+Shift+P, "Dev Containers: Clone Repository in Container Volume..."
-2. select "Github"
-3. enter "thediveo/enumflag" and off you go...
+1. `git clone https://github.com/thediveo/enumflag`
+2. in VSCode: Ctrl+Shift+P, "Dev Containers: Open Workspace in Container..."
+3. select `enumflag.code-workspace` and off you go...
 
 ## VSCode Tasks
 
