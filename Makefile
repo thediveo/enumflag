@@ -1,4 +1,4 @@
-.PHONY: help clean coverage pkgsite report test vuln chores
+.PHONY: help clean coverage report test
 
 help: ## list available targets
 	@# Shamelessly stolen from Gomega's Makefile
