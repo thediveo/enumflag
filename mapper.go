@@ -26,7 +26,7 @@ import (
 // EnumIdentifiers maps enumeration values to their corresponding textual
 // representations (~identifiers). This mapping is a one-to-many mapping in that
 // the same enumeration value may have more than only one associated textual
-// representation (indentifier). If more than one textual representation exists
+// representation (identifier). If more than one textual representation exists
 // for the same enumeration value, then the first textual representation is
 // considered to be the canonical one.
 type EnumIdentifiers[E constraints.Integer] map[E][]string
@@ -62,7 +62,7 @@ func (m enumMapper[E]) ValueOf(name string) (E, error) {
 		comparefn = func(s string) bool { return strings.ToLower(s) == name }
 	}
 	// Try to find a matching enum value textual representation, and then take
-	// its enumation value ("code").
+	// its enumeration value ("code").
 	for enumval, ids := range m.m {
 		if slices.IndexFunc(ids, comparefn) >= 0 {
 			return enumval, nil
