@@ -17,7 +17,8 @@
             "race": true,
             "verbose": true,
             "html": true
-        }
+        },
+        "ghcr.io/thediveo/devcontainer-features/pin-github-action:0": {}
     },
     "remoteEnv": {
         "GOPATH": "/home/vscode/go",
