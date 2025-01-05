@@ -344,13 +344,22 @@ func Example_slice() {
 }
 ```
 
+## DevContainer
+
+First method:
+
+1. in VSCode: Ctrl+Shift+P, "Dev Containers: Open Workspace in Container..."
+2. select `enumflag.code-workspace` and off you go...
+
+Second method:
+
+1. In VSCode: Ctrl+Shift+P, "Dev Containers: Clone Repository in Container Volume..."
+2. select "Github"
+3. enter "thediveo/enumflag" and off you go...
+
 ## VSCode Tasks
 
 The included `enumflag.code-workspace` defines the following tasks:
-
-- **View Go module documentation** task: installs `pkgsite`, if not done already
-  so, then starts `pkgsite` and opens VSCode's integrated ("simple") browser to
-  show the go-plugger/v2 documentation.
 
 - **Build workspace** task: builds all, including the shared library test
   plugin.
@@ -374,18 +383,12 @@ The included `enumflag.code-workspace` defines the following tasks:
 
 ## Make Targets
 
-- `make`: lists all targets.
-- `make coverage`: runs all tests with coverage and then **updates the coverage
-  badge in `README.md`**.
-- `make pkgsite`: installs [`x/pkgsite`](golang.org/x/pkgsite/cmd/pkgsite), as
-  well as the [`browser-sync`](https://www.npmjs.com/package/browser-sync) and
-  [`nodemon`](https://www.npmjs.com/package/nodemon) npm packages first, if not
-  already done so. Then runs the `pkgsite` and hot reloads it whenever the
-  documentation changes.
-- `make report`: installs
-  [`@gojp/goreportcard`](https://github.com/gojp/goreportcard) if not yet done
-  so and then runs it on the code base.
+- `make`: lists available targets.
 - `make test`: runs all tests.
+- `make coverage`: deprecated, use the `gocover` CLI command in the devcontainer
+  instead.
+- `make report`: deprecated, use the `goreportcard-cli` CLI command in the
+  devcontainer instead.
 
 ## Contributing
 
@@ -393,5 +396,5 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Copyright and License
 
-`lxkns` is Copyright 2020, 2023 Harald Albrecht, and licensed under the Apache
+`lxkns` is Copyright 2020, 2025 Harald Albrecht, and licensed under the Apache
 License, Version 2.0.

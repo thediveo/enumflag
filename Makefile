@@ -7,21 +7,13 @@ help: ## list available targets
 clean: ## cleans up build and testing artefacts
 	rm -f coverage.*
 
-coverage: ## gathers coverage and updates README badge
-	@scripts/cov.sh
-
-pkgsite: ## serves Go documentation on port 6060
-	@echo "navigate to: http://localhost:6060/github.com/thediveo/enumflag/v2"
-	@scripts/pkgsite.sh
-
-report: ## run goreportcard on this module
-	@scripts/goreportcard.sh
-
 test: ## run unit tests
 	go test -v -p=1 -race ./...
 
-vuln: ## runs govulncheck
-	@scripts/vuln.sh
+report: ## run goreportcard-cli on this module
+# from ghcr.io/thediveo/devcontainer-features/goreportcard
+	goreportcard-cli -v ./..
 
-chores: ## updates Go binaries and NPM helper packages if necessary
-	@scripts/chores.sh
+coverage: ## gathers coverage and updates README badge
+# from ghcr.io/thediveo/devcontainer-features/gocover
+	gocover
