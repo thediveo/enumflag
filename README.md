@@ -368,20 +368,6 @@ The included `enumflag.code-workspace` defines the following tasks:
 - **Run all tests with coverage** task: does what it says on the tin and runs
   all tests with coverage.
 
-#### Aux Tasks
-
-- _pksite service_: auxiliary task to run `pkgsite` as a background service
-  using `scripts/pkgsite.sh`. The script leverages browser-sync and nodemon to
-  hot reload the Go module documentation on changes; many thanks to @mdaverde's
-  [_Build your Golang package docs
-  locally_](https://mdaverde.com/posts/golang-local-docs) for paving the way.
-  `scripts/pkgsite.sh` adds automatic installation of `pkgsite`, as well as the
-  `browser-sync` and `nodemon` npm packages for the local user.
-- _view pkgsite_: auxiliary task to open the VSCode-integrated "simple" browser
-  and pass it the local URL to open in order to show the module documentation
-  rendered by `pkgsite`. This requires a detour via a task input with ID
-  "_pkgsite_".
-
 ## Make Targets
 
 - `make`: lists available targets.
