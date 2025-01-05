@@ -40,12 +40,14 @@ var FooModeNames = map[FooMode][]string{
 	Baz: {"baz"},
 }
 
-func newRootCmd(w io.Writer) *cobra.Command {
+func newRootCmd(wout, werr io.Writer) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use: Name,
 		Run: func(*cobra.Command, []string) {},
 	}
-	rootCmd.SetOutput(w)
+	// https://github.com/spf13/cobra/issues/2214#issuecomment-2571424842
+	rootCmd.SetOut(wout)
+	rootCmd.SetErr(werr)
 
 	testCmd := &cobra.Command{
 		Use:  "test the canary",
@@ -70,10 +72,12 @@ func main() {
 	// Cobra automatically adds a "__complete" command to our root command
 	// behind the scenes, unless we specify one explicitly. It also adds a
 	// "complete" sub command if we're adding at least one sub command.
-	if err := newRootCmd(stdout).Execute(); err != nil {
+	if err := newRootCmd(stdout, stderr).Execute(); err != nil {
 		osExit(1)
 	}
 }
 
+// To 100% and beyond!!!
 var osExit = os.Exit
 var stdout io.Writer = os.Stdout
+var stderr io.Writer = os.Stderr

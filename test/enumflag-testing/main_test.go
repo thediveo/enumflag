@@ -28,43 +28,51 @@ import (
 var _ = Describe("enumflag-testing canary", func() {
 
 	var rootCmd *cobra.Command
-	var out *bytes.Buffer
+	var outbuff, errbuff *bytes.Buffer
 
 	BeforeEach(func() {
-		out = &bytes.Buffer{}
-		rootCmd = newRootCmd(out)
+		outbuff = &bytes.Buffer{}
+		errbuff = &bytes.Buffer{}
+		rootCmd = newRootCmd(outbuff, errbuff)
 	})
 
 	It("has a hidden __complete command", func() {
 		rootCmd.SetArgs([]string{"__complete", "t"})
 		Expect(rootCmd.Execute()).To(Succeed())
-		Expect(out.String()).To(MatchRegexp(`test\n:\d+\nCompletion ended with directive: .+`))
+		Expect(outbuff.String()).To(MatchRegexp(`test\n:\d+\n`))
+		Expect(errbuff.String()).To(MatchRegexp(`Completion ended with directive: .+`))
 	})
 
 	It("lists the completion command", func() {
 		rootCmd.SetArgs([]string{"-h"})
 		Expect(rootCmd.Execute()).To(Succeed())
-		Expect(out.String()).To(MatchRegexp(`Available Commands:\n\s+completion\s+ Generate .* shell`))
+		Expect(outbuff.String()).To(MatchRegexp(`Available Commands:\n\s+completion\s+ Generate .* shell`))
+		Expect(errbuff.String()).To(BeEmpty())
 	})
 
 	It("generates a shell completion script", func() {
 		rootCmd.SetArgs([]string{"completion", "bash"})
 		Expect(rootCmd.Execute()).To(Succeed())
-		Expect(out.String()).To(MatchRegexp(`^# bash completion V2 for`))
+		Expect(outbuff.String()).To(MatchRegexp(`^# bash completion V2 for`))
+		Expect(errbuff.String()).To(BeEmpty())
 	})
 
 	It("reaches 100% :p", func() {
 		exitCode := -1
-		defer func(old func(int), oldargs []string, out io.Writer) {
+		defer func(old func(int), oldargs []string, wout, werr io.Writer) {
 			osExit = old
 			os.Args = oldargs
-			stdout = out
-		}(osExit, os.Args, os.Stdout)
+			stdout = wout
+			stderr = werr
+		}(osExit, os.Args, os.Stdout, os.Stderr)
 		osExit = func(code int) { exitCode = code }
 		os.Args = []string{os.Args[0], "froobz"}
-		stdout = &bytes.Buffer{}
+		stdout = outbuff
+		stderr = errbuff
 		main()
 		Expect(exitCode).To(Equal(1))
+		Expect(outbuff.String()).To(BeEmpty())
+		Expect(errbuff.String()).To(MatchRegexp(`Error: unknown command .+\n.+ for usage.\n`))
 	})
 
 })

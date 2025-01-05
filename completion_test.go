@@ -111,6 +111,32 @@ var _ = Describe("flag enum completions end-to-end", Ordered, func() {
 
 	BeforeEach(func() {
 		bash, bashin = Bash()
+		// Gomega hack: when trying to run the interactive subshell in its own
+		// session, creating a new session might be ignored and we get an error
+		// message on stderr from the subshell. So we need to ignore this
+		// unwanted "heckling", but Gomega's gbytes does not directly support
+		// ignoring output. So we resort to (asynchronous) detection of bash's
+		// heckling and then simply ignore it. This will fast forward over the
+		// heckling, so the tests then can still correctly proceed.
+		ch := bash.Err.Detect(`(bash: .*\n)+`)
+		// Make sure to drain the unbuffered detection channel.
+		done := make(chan struct{})
+		defer close(done)
+		go func() {
+			for {
+				select {
+				case <-ch:
+					// nothing; just drain
+				case <-done:
+					break
+				}
+			}
+		}()
+		DeferCleanup(func() {
+			// Note: Gomega currently crashes in CancelDetects() if no
+			// Detect()'s have been done before.
+			bash.Err.CancelDetects()
+		})
 	})
 
 	It("tab-completes the canary's name in $PATH", func() {
