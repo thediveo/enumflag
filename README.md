@@ -152,8 +152,7 @@ registering have to be carried out as separate instructions.
 Please note for shell completion to work, your root command needs to have at
 least one (explicit) sub command. Otherwise, `cobra` won't automatically add an
 additional `completion` sub command. For more details, please refer to cobra's
-documentation on [Generating shell
-completions](https://github.com/spf13/cobra/blob/main/shell_completions.md).
+documentation on [Generating shellcompletions](https://github.com/spf13/cobra/blob/main/site/content/completions/_index.md).
 
 ### Use Existing Enum Types
 
