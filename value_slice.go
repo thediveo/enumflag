@@ -24,7 +24,7 @@ import (
 
 // enumSlice represents a slice of enumeration values that can be retrieved,
 // set, and stringified.
-type enumSlice[E constraints.Integer] struct {
+type enumSlice[E constraints.Ordered] struct {
 	v     *[]E
 	merge bool // replace the complete slice or merge values?
 }

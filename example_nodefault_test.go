@@ -4,11 +4,12 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
 	"github.com/thediveo/enumflag/v2"
 )
 
 // ① Define your new enum flag type. It can be derived from enumflag.Flag,
-// but it doesn't need to be as long as it satisfies constraints.Integer.
+// but it doesn't need to be as long as it satisfies constraints.Ordered.
 type BarMode enumflag.Flag
 
 // ② Define the enumeration values for BarMode.

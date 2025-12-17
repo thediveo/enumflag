@@ -24,7 +24,7 @@ import (
 // value prefix. The reason is that enumflag will automatically register the
 // correct (erm, “complete”) completion text. Please note that it isn't
 // necessary to supply any help texts in order to register enum flag completion.
-type Help[E constraints.Integer] map[E]string
+type Help[E constraints.Ordered] map[E]string
 
 // Completor tells cobra how to complete a flag. See also cobra's [dynamic flag
 // completion] documentation.

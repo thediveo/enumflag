@@ -24,7 +24,7 @@ enumeration values either with a single flag `--mode=foo,bar` or multiple flag
 calls, such as `--mode=foo --mode=bar`.
 
 Application programmers then simply deal with enumeration values in form of
-uints (or ints, _erm_, anything that satisfies `constraints.Integer`s),
+uints (or ints, _erm_, anything that satisfies `constraints.Ordered`s),
 liberated from parsing strings and validating enumeration flags.
 
 For devcontainer instructions, please see the [section "DevContainer"
@@ -76,7 +76,7 @@ import (
 )
 
 // ① Define your new enum flag type. It can be derived from enumflag.Flag,
-// but it doesn't need to be as long as it satisfies constraints.Integer.
+// but it doesn't need to be as long as it satisfies constraints.Ordered.
 type FooMode enumflag.Flag
 
 // ② Define the enumeration values for FooMode.
@@ -306,7 +306,7 @@ import (
 )
 
 // ① Define your new enum flag type. It can be derived from enumflag.Flag,
-// but it doesn't need to be as long as it satisfies constraints.Integer.
+// but it doesn't need to be as long as it satisfies constraints.Ordered.
 type MooMode enumflag.Flag
 
 // ② Define the enumeration values for FooMode.
