@@ -18,7 +18,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/constraints"
 )
 
 // Flag represents a CLI (enumeration) flag which can take on only a single
@@ -31,7 +30,9 @@ import (
 // However, applications don't need to base their own enum types on Flag. The
 // only requirement for user-defined enumeration flags is that they must be
 // (“somewhat”) compatible with the Flag type, or more precise: user-defined
-// enumerations must satisfy [constraints.Ordered].
+// enumerations must satisfy the predeclared type identifier [comparable].
+//
+// [comparable]: https://go.dev/blog/comparable
 type Flag uint
 
 // EnumCaseSensitivity specifies whether the textual representations of enum
@@ -45,12 +46,11 @@ const (
 	EnumCaseSensitive   EnumCaseSensitivity = true
 )
 
-// EnumFlagValue wraps a user-defined enum type value satisfying
-// [constraints.Ordered] or [][constraints.Ordered]. It implements the
-// [github.com/spf13/pflag.Value] interface, so the user-defined enum type value
-// can directly be used with the fine pflag drop-in package for Golang CLI
-// flags.
-type EnumFlagValue[E constraints.Ordered] struct {
+// EnumFlagValue wraps a user-defined enum type value satisfying comparable or
+// []comparable. It implements the [github.com/spf13/pflag.Value] interface, so
+// the user-defined enum type value can directly be used with the fine pflag
+// drop-in package for Golang CLI flags.
+type EnumFlagValue[E comparable] struct {
 	value    enumValue[E]  // enum value of a user-defined enum scalar or slice type.
 	enumtype string        // user-friendly name of the user-defined enum type.
 	names    enumMapper[E] // enum value names.
@@ -63,26 +63,26 @@ type EnumFlagValue[E constraints.Ordered] struct {
 // code”: by just moving the interface type from the source file with the struct
 // types to the source file with the consumer we achieve immediate Go
 // perfectness! Strike!
-type enumValue[E constraints.Ordered] interface {
+type enumValue[E comparable] interface {
 	Get() any
 	Set(val string, names enumMapper[E]) error
 	String(names enumMapper[E]) string
 	NewCompletor(enums EnumIdentifiers[E], help Help[E]) Completor
 }
 
-// New wraps a given enum variable (satisfying [constraints.Ordered]) so that it
-// can be used as a flag Value with [github.com/spf13/pflag.Var] and
-// [github.com/spf13/pflag.VarP]. In case no default enum value should be set
-// and therefore no default shown in [spf13/cobra], use [NewWithoutDefault]
-// instead.
+// New wraps a given enum variable (satisfying the predeclared type identifier
+// comparable) so that it can be used as a flag Value with
+// [github.com/spf13/pflag.Var] and [github.com/spf13/pflag.VarP]. In case no
+// default enum value should be set and therefore no default shown in
+// [spf13/cobra], use [NewWithoutDefault] instead.
 //
 // [spf13/cobra]: https://github.com/spf13/cobra
-func New[E constraints.Ordered](flag *E, typename string, mapping EnumIdentifiers[E], sensitivity EnumCaseSensitivity) *EnumFlagValue[E] {
+func New[E comparable](flag *E, typename string, mapping EnumIdentifiers[E], sensitivity EnumCaseSensitivity) *EnumFlagValue[E] {
 	return new("New", flag, typename, mapping, sensitivity, false)
 }
 
-// NewWithoutDefault wraps a given enum variable (satisfying
-// [constraints.Ordered]) so that it can be used as a flag Value with
+// NewWithoutDefault wraps a given enum variable (satisfying the predeclared
+// type identifier comparable) so that it can be used as a flag Value with
 // [github.com/spf13/pflag.Var] and [github.com/spf13/pflag.VarP]. Please note
 // that the zero enum value must not be mapped and thus not be assigned to any
 // enum value textual representation.
@@ -91,14 +91,14 @@ func New[E constraints.Ordered](flag *E, typename string, mapping EnumIdentifier
 // created with NewWithoutDefault.
 //
 // [spf13/cobra]: https://github.com/spf13/cobra
-func NewWithoutDefault[E constraints.Ordered](flag *E, typename string, mapping EnumIdentifiers[E], sensitivity EnumCaseSensitivity) *EnumFlagValue[E] {
+func NewWithoutDefault[E comparable](flag *E, typename string, mapping EnumIdentifiers[E], sensitivity EnumCaseSensitivity) *EnumFlagValue[E] {
 	return new("NewWithoutDefault", flag, typename, mapping, sensitivity, true)
 }
 
 // new returns a new enum variable to be used with pflag.Var and pflag.VarP.
-func new[E constraints.Ordered](ctor string, flag *E, typename string, mapping EnumIdentifiers[E], sensitivity EnumCaseSensitivity, nodefault bool) *EnumFlagValue[E] {
+func new[E comparable](ctor string, flag *E, typename string, mapping EnumIdentifiers[E], sensitivity EnumCaseSensitivity, nodefault bool) *EnumFlagValue[E] {
 	if flag == nil {
-		panic(fmt.Sprintf("%s requires flag to be a non-nil pointer to an enum value satisfying constraints.Ordered", ctor))
+		panic(fmt.Sprintf("%s requires flag to be a non-nil pointer to an enum value satisfying comparable", ctor))
 	}
 	if mapping == nil {
 		panic(fmt.Sprintf("%s requires mapping not to be nil", ctor))
@@ -110,10 +110,10 @@ func new[E constraints.Ordered](ctor string, flag *E, typename string, mapping E
 	}
 }
 
-// NewSlice wraps a given enum slice variable (satisfying [constraints.Ordered])
+// NewSlice wraps a given enum slice variable (satisfying [comparable])
 // so that it can be used as a flag Value with [github.com/spf13/pflag.Var] and
 // [github.com/spf13/pflag.VarP].
-func NewSlice[E constraints.Ordered](flag *[]E, typename string, mapping EnumIdentifiers[E], sensitivity EnumCaseSensitivity) *EnumFlagValue[E] {
+func NewSlice[E comparable](flag *[]E, typename string, mapping EnumIdentifiers[E], sensitivity EnumCaseSensitivity) *EnumFlagValue[E] {
 	if flag == nil {
 		panic("NewSlice requires flag to be a non-nil pointer to an enum value slice satisfying []any")
 	}
@@ -153,4 +153,20 @@ func (e *EnumFlagValue[E]) Get() any { return e.value.Get() }
 func (e *EnumFlagValue[E]) RegisterCompletion(cmd *cobra.Command, name string, help Help[E]) error {
 	return cmd.RegisterFlagCompletionFunc(
 		name, e.value.NewCompletor(e.names.Mapping(), help))
+}
+
+// GetValue returns the (scalar) enum value of type E, otherwise it returns the
+// zero value for type E.
+func (e *EnumFlagValue[E]) GetValue() (v E) {
+	ev := e.Get() // returns E, not *E
+	v, _ = ev.(E)
+	return
+}
+
+// GetSliceValue returns the slice enum value of type []E, otherwise it returns
+// the zero value for type []E.
+func (e *EnumFlagValue[E]) GetSliceValue() (v []E) {
+	ev := e.Get() // returns []E, not *[]E
+	v, _ = ev.([]E)
+	return
 }

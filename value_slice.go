@@ -15,16 +15,15 @@
 package enumflag
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/constraints"
-	"golang.org/x/exp/slices"
 )
 
 // enumSlice represents a slice of enumeration values that can be retrieved,
 // set, and stringified.
-type enumSlice[E constraints.Ordered] struct {
+type enumSlice[E comparable] struct {
 	v     *[]E
 	merge bool // replace the complete slice or merge values?
 }

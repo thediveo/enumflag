@@ -2,34 +2,26 @@ package enumflag_test
 
 import (
 	"fmt"
-	"os"
+	"log/slog"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/thediveo/enumflag/v2"
 )
-
-func init() {
-	log.SetOutput(os.Stdout)
-}
 
 func Example_external() {
 	// ①+② skip "define your own enum flag type" and enumeration values, as we
 	// already have a 3rd party one.
 
 	// ③ Map 3rd party enumeration values to their textual representations
-	var LoglevelIds = map[log.Level][]string{
-		log.TraceLevel: {"trace"},
-		log.DebugLevel: {"debug"},
-		log.InfoLevel:  {"info"},
-		log.WarnLevel:  {"warning", "warn"},
-		log.ErrorLevel: {"error"},
-		log.FatalLevel: {"fatal"},
-		log.PanicLevel: {"panic"},
+	var LoglevelIds = map[slog.Level][]string{
+		slog.LevelDebug: {"debug"},
+		slog.LevelInfo:  {"info"},
+		slog.LevelWarn:  {"warning", "warn"},
+		slog.LevelError: {"error"},
 	}
 
 	// ④ Define your enum flag value and set the your logging default value.
-	var loglevel log.Level = log.WarnLevel
+	var loglevel = slog.LevelWarn
 
 	rootCmd := &cobra.Command{
 		Run: func(cmd *cobra.Command, _ []string) {
@@ -49,6 +41,6 @@ func Example_external() {
 	rootCmd.SetArgs([]string{"--log", "debug"})
 	_ = rootCmd.Execute()
 	// Output:
-	// logging level is: 3="warning"
-	// logging level is: 5="debug"
+	// logging level is: 4="warning"
+	// logging level is: -4="debug"
 }
