@@ -24,7 +24,7 @@ enumeration values either with a single flag `--mode=foo,bar` or multiple flag
 calls, such as `--mode=foo --mode=bar`.
 
 Application programmers then simply deal with enumeration values in form of
-uints (or ints, _erm_, anything that satisfies `constraints.Ordered`s),
+uints (or ints, _erm_, anything that satisfies `comparable`s),
 liberated from parsing strings and validating enumeration flags.
 
 For devcontainer instructions, please see the [section "DevContainer"
@@ -76,7 +76,7 @@ import (
 )
 
 // ① Define your new enum flag type. It can be derived from enumflag.Flag,
-// but it doesn't need to be as long as it satisfies constraints.Ordered.
+// but it doesn't need to be as long as it satisfies comparable.
 type FooMode enumflag.Flag
 
 // ② Define the enumeration values for FooMode.
@@ -306,7 +306,7 @@ import (
 )
 
 // ① Define your new enum flag type. It can be derived from enumflag.Flag,
-// but it doesn't need to be as long as it satisfies constraints.Ordered.
+// but it doesn't need to be as long as it satisfies comparable.
 type MooMode enumflag.Flag
 
 // ② Define the enumeration values for FooMode.
@@ -356,25 +356,6 @@ func Example_slice() {
 1. `git clone https://github.com/thediveo/enumflag`
 2. in VSCode: Ctrl+Shift+P, "Dev Containers: Open Workspace in Container..."
 3. select `enumflag.code-workspace` and off you go...
-
-## VSCode Tasks
-
-The included `enumflag.code-workspace` defines the following tasks:
-
-- **Build workspace** task: builds all, including the shared library test
-  plugin.
-
-- **Run all tests with coverage** task: does what it says on the tin and runs
-  all tests with coverage.
-
-## Make Targets
-
-- `make`: lists available targets.
-- `make test`: runs all tests.
-- `make coverage`: deprecated, use the `gocover` CLI command in the devcontainer
-  instead.
-- `make report`: deprecated, use the `goreportcard-cli` CLI command in the
-  devcontainer instead.
 
 ## Contributing
 

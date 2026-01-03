@@ -15,9 +15,10 @@
 package enumflag
 
 import (
+	"github.com/spf13/cobra"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/spf13/cobra"
 )
 
 var _ = Describe("flag", func() {
@@ -56,6 +57,24 @@ var _ = Describe("flag", func() {
 			val := NewSlice(&foomodes, "modes", FooModeIdentifiersTest, EnumCaseInsensitive)
 			Expect(val.String()).To(Equal("[bar,foo]"))
 			Expect(val.Type()).To(Equal("modes"))
+		})
+
+	})
+
+	Context("retrieving the enum value", func() {
+
+		It("succeeds for scalar", func() {
+			var foomode = fmBar
+			val := New(&foomode, "mode", FooModeIdentifiersTest, EnumCaseSensitive)
+			Expect(val.GetValue()).To(Equal(fmBar))
+			Expect(val.GetSliceValue()).To(BeZero())
+		})
+
+		It("succeeds for slices", func() {
+			var foomodes = []FooModeTest{fmBar}
+			val := NewSlice(&foomodes, "mode", FooModeIdentifiersTest, EnumCaseSensitive)
+			Expect(val.GetValue()).To(BeZero())
+			Expect(val.GetSliceValue()).To(ConsistOf(fmBar))
 		})
 
 	})

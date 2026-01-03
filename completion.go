@@ -16,7 +16,6 @@ package enumflag
 
 import (
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/constraints"
 )
 
 // Help maps enumeration values to their corresponding help descriptions. These
@@ -24,7 +23,7 @@ import (
 // value prefix. The reason is that enumflag will automatically register the
 // correct (erm, “complete”) completion text. Please note that it isn't
 // necessary to supply any help texts in order to register enum flag completion.
-type Help[E constraints.Ordered] map[E]string
+type Help[E comparable] map[E]string
 
 // Completor tells cobra how to complete a flag. See also cobra's [dynamic flag
 // completion] documentation.
