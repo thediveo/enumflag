@@ -6,6 +6,8 @@ on:
   pull_request:
     branches:
       - master
+permissions:
+  contents: read
 
 jobs:
 
@@ -18,13 +20,13 @@ jobs:
     steps:
 
       - name: Set up Go ${{matrix.go}}
-        uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # pin@v5
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6
         with:
           go-version: ${{matrix.go}}
         id: go
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # pin@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Test
+      - name: Test Go packages
         run: go test -v -p=1 -race ./...

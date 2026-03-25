@@ -3,5 +3,10 @@
 		{
 			"path": "."
 		}
-	]
+	],
+	"settings": {
+		"markdown.styles": [
+			"./.vscode/markdown-preview.css"
+		]
+	}
 }
