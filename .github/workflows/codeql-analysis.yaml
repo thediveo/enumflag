@@ -1,0 +1,42 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+      - develop
+  schedule:
+    - cron: '42 17 * * 3'
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: read # for github/codeql-action/init to get workflow details
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for github/codeql-action/analyze to upload SARIF results
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'go', 'actions' ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@38697555549f1db7851b81482ff19f1fa5c4fedc # v4
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@38697555549f1db7851b81482ff19f1fa5c4fedc # v4
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@38697555549f1db7851b81482ff19f1fa5c4fedc # v4
