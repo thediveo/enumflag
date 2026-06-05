@@ -60,9 +60,7 @@ var _ = Describe("flag enum completions end-to-end", Ordered, func() {
 
 		By("creating a temporary directory for storing completion scripts")
 		completionsUserDir = Successful(os.MkdirTemp("", "bash-completions-*"))
-		DeferCleanup(func() {
-			os.RemoveAll(completionsUserDir)
-		})
+		DeferCleanup(os.RemoveAll, completionsUserDir)
 		// Notice how the bash-completion FAQ
 		// https://github.com/scop/bash-completion/blob/master/README.md#faq
 		// says that the completions must be inside a "completions" sub
@@ -100,7 +98,7 @@ var _ = Describe("flag enum completions end-to-end", Ordered, func() {
 			gexec.Start(bashCmd, GinkgoWriter, GinkgoWriter))
 		DeferCleanup(func() {
 			By("killing the test bash session")
-			stdin.Close()
+			_ = stdin.Close()
 			session.Kill().Wait(2 * time.Second)
 		})
 		return session, stdin
@@ -121,14 +119,16 @@ var _ = Describe("flag enum completions end-to-end", Ordered, func() {
 		ch := bash.Err.Detect(`(bash: .*\n)+`)
 		// Make sure to drain the unbuffered detection channel.
 		done := make(chan struct{})
-		defer close(done)
+		DeferCleanup(func() {
+			close(done)
+		})
 		go func() {
 			for {
 				select {
 				case <-ch:
 					// nothing; just drain
 				case <-done:
-					break
+					return
 				}
 			}
 		}()

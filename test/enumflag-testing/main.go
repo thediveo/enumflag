@@ -19,6 +19,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
 	"github.com/thediveo/enumflag/v2"
 )
 
@@ -58,7 +59,7 @@ func newRootCmd(wout, werr io.Writer) *cobra.Command {
 
 	ef := enumflag.New(&fooMode, "FooMode", FooModeNames, enumflag.EnumCaseInsensitive)
 	testCmd.PersistentFlags().Var(ef, "mode", "sets foo mode")
-	ef.RegisterCompletion(testCmd, "mode", enumflag.Help[FooMode]{
+	_ = ef.RegisterCompletion(testCmd, "mode", enumflag.Help[FooMode]{
 		Foo: "foos the output",
 		Bar: "bars the output",
 		Baz: "bazs the output",
