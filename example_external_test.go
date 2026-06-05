@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/spf13/cobra"
+
 	"github.com/thediveo/enumflag/v2"
 )
 

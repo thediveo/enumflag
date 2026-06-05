@@ -357,11 +357,17 @@ func Example_slice() {
 2. in VSCode: Ctrl+Shift+P, "Dev Containers: Open Workspace in Container..."
 3. select `enumflag.code-workspace` and off you go...
 
+## Supported Go Versions
+
+`netdb` supports versions of Go that are noted by the [Go release
+policy](https://golang.org/doc/devel/release.html#policy), that is, major
+versions _N_ and _N_-1 (where _N_ is the current major version).
+
 ## Contributing
 
 Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Copyright and License
 
-`lxkns` is Copyright 2020, 2025 Harald Albrecht, and licensed under the Apache
+`lxkns` is Copyright 2020, 2026 Harald Albrecht, and licensed under the Apache
 License, Version 2.0.
